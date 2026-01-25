@@ -22,3 +22,4 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 - 2026-01-25 Summary JSON fields: version, totalPortfolios, publishedCount, lastUpdatedAt, visibilityBreakdown, completionHint.
 - 2026-01-25 Tests: `npm run db:push` (file-based remote DB), `npm run typecheck`, `npm run build --remote`; dev server on `http://localhost:4322/` with `/` and `/app/portfolios` loading; sample public slug returned 404 as expected.
 - 2026-01-25 Backed up `.astro/content.db` to `.astro/content.db.bak-20260125-1235` before schema push.
+- 2026-01-25 Verified webhook live: POST to `http://localhost:4322/api/webhooks/portfolio-creator-activity.json` returned 204 and Dashboard row updated for appId `portfolio-creator` (userId `2e3633d2-47bd-4885-acb2-24a0fa454f70`, summaryVersion 1).
