@@ -1,0 +1,454 @@
+---
+import {
+  AvButton,
+  AvCard,
+  AvContainer,
+  AvDrawer,
+  AvEmptyState,
+  AvInput,
+  AvLoading,
+  AvSelect,
+  AvTextarea,
+} from "@ansiversa/components";
+import { actions } from "astro:actions";
+import AppShell from "../../../layouts/AppShell.astro";
+import type { PortfolioProjectDetail } from "../../../modules/portfolio-creator/types";
+import { sectionLabels } from "../../../modules/portfolio-creator/helpers";
+
+const projectId = Astro.params.id ?? "";
+let projectData: PortfolioProjectDetail | null = null;
+let loadError: string | null = null;
+
+try {
+  const result = await Astro.callAction(actions.portfolioCreator.getProject, { projectId });
+  const data = (result as any)?.data ?? (result as any) ?? null;
+  projectData = data as PortfolioProjectDetail;
+} catch (err) {
+  loadError = (err as Error)?.message ?? "Unable to load portfolio.";
+}
+
+const title = projectData?.project?.title
+  ? `Edit ${projectData.project.title} – Portfolio Creator`
+  : "Edit Portfolio – Portfolio Creator";
+const description = "Edit your portfolio content and preview the public page.";
+
+const initialState = {
+  activeProject: projectData,
+  activeProjectId: projectData?.project?.id ?? projectId,
+  projects: [],
+};
+
+const sectionOrder = [
+  "profile",
+  "about",
+  "featuredProjects",
+  "experience",
+  "skills",
+  "education",
+  "certifications",
+  "achievements",
+  "contact",
+] as const;
+---
+
+<AppShell title={title} description={description}>
+  <section class="av-section">
+    <AvContainer size="default">
+      <div
+        class="av-auth-stack-lg"
+        x-data="$store.portfolioCreator"
+        x-init="init && init(JSON.parse($el.dataset.initial))"
+        data-initial={JSON.stringify(initialState)}
+      >
+        {loadError ? (
+          <div class="av-auth-stack-md">
+            <AvEmptyState headline="Unable to load portfolio" description={loadError} />
+            <AvButton href="/app/portfolios" variant="ghost">Back to portfolios</AvButton>
+          </div>
+        ) : (
+          <>
+            <AvCard>
+              <div class="av-auth-stack-md">
+                <div class="av-auth-stack-xs">
+                  <p class="av-kicker">Portfolio Creator</p>
+                  <h1 class="av-section-title">Edit portfolio</h1>
+                  <p class="av-text-soft">Update details, manage sections, and preview the public page.</p>
+                </div>
+
+                <form class="av-auth-stack-sm" @submit.prevent="saveProjectMeta()">
+                  <div class="av-portfolio-form-grid">
+                    <AvInput
+                      label="Portfolio title"
+                      name="portfolio-title"
+                      placeholder="Portfolio name"
+                      x-model="projectMeta.title"
+                      required
+                    />
+                    <AvInput
+                      label="Slug"
+                      name="portfolio-slug"
+                      placeholder="your-name"
+                      x-model="projectMeta.slug"
+                      required
+                    />
+                    <AvSelect
+                      label="Visibility"
+                      name="portfolio-visibility"
+                      x-model="projectMeta.visibility"
+                    >
+                      <option value="public">Public</option>
+                      <option value="unlisted">Unlisted</option>
+                      <option value="private">Private</option>
+                    </AvSelect>
+                  </div>
+
+                  <div class="av-row-wrap">
+                    <AvButton type="submit" :disabled="loading">Save details</AvButton>
+                    <AvButton type="button" variant="ghost" @click.prevent="togglePublish()" :disabled="loading">
+                      <span x-text="projectMeta.isPublished ? 'Unpublish' : 'Publish'"></span>
+                    </AvButton>
+                    <AvButton
+                      type="button"
+                      variant="ghost"
+                      href="#"
+                      x-bind:href="`/${projectMeta.slug}`"
+                      target="_blank"
+                    >
+                      View public
+                    </AvButton>
+                  </div>
+                </form>
+              </div>
+            </AvCard>
+
+            <div class="av-portfolio-editor">
+              <div class="av-portfolio-editor__left">
+                <AvCard className="av-auth-stack-sm">
+                  <div class="av-auth-stack-xxs">
+                    <h2 class="av-card-heading">Sections</h2>
+                    <p class="av-text-soft">Open a section to edit its content.</p>
+                  </div>
+                  <div class="av-portfolio-section-list">
+                    {sectionOrder.map((key) => (
+                      <button
+                        type="button"
+                        class="av-portfolio-section-button"
+                        :class={`activeSectionKey === '${key}' ? 'is-active' : ''`}
+                        @click.prevent={`openSection('${key}')`}
+                      >
+                        <span>{sectionLabels[key]}</span>
+                        <span class="av-portfolio-section-button__meta">
+                          <template x-if="activeProject">
+                            <span
+                              x-text={`(activeProject.sections.find(section => section.key === '${key}')?.isEnabled ?? true) ? 'Enabled' : 'Hidden'`}
+                            ></span>
+                          </template>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </AvCard>
+              </div>
+
+              <div class="av-portfolio-editor__right">
+                <AvCard>
+                  <div class="av-auth-stack-xs">
+                    <h2 class="av-card-heading">Live preview</h2>
+                    <p class="av-text-soft">Preview updates after you save changes.</p>
+                  </div>
+                  <div class="av-portfolio-preview-frame">
+                    <iframe title="Portfolio preview" x-bind:src="previewSrc"></iframe>
+                  </div>
+                </AvCard>
+              </div>
+            </div>
+          </>
+        )}
+
+        <AvLoading x-show="loading" x-cloak label="Saving…" />
+
+        <template x-if="drawerOpen">
+          <div
+            class="av-drawer-overlay"
+            @click.self="closeDrawer()"
+            @keydown.escape.window="closeDrawer()"
+            @close-drawer="closeDrawer()"
+            x-cloak
+          >
+            <AvDrawer title="Edit section" description="Update section content and save.">
+              <div class="av-auth-stack-md">
+                <div class="av-auth-stack-xs">
+                  <p class="av-kicker" x-text="getSectionLabel(activeSectionKey)"></p>
+                  <p class="av-text-soft">Save to refresh the preview.</p>
+                </div>
+
+                <template x-if="activeSectionKey === 'profile'">
+                  <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
+                    <AvInput label="Full name" name="full-name" x-model="formData.fullName" required />
+                    <AvInput label="Headline" name="headline" x-model="formData.headline" />
+                    <AvInput label="Location" name="location" x-model="formData.location" />
+                    <div class="av-portfolio-form-grid">
+                      <AvInput label="Email" name="email" x-model="formData.email" />
+                      <AvInput label="Phone" name="phone" x-model="formData.phone" />
+                    </div>
+                    <AvInput label="Website" name="website" x-model="formData.website" />
+                    <div class="av-portfolio-form-grid">
+                      <AvInput label="GitHub" name="github" x-model="formData.github" />
+                      <AvInput label="LinkedIn" name="linkedin" x-model="formData.linkedin" />
+                    </div>
+                    <div class="av-row-wrap">
+                      <AvButton type="submit" :disabled="loading">Save profile</AvButton>
+                    </div>
+                  </form>
+                </template>
+
+                <template x-if="activeSectionKey === 'about'">
+                  <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
+                    <AvTextarea
+                      label="About"
+                      name="about-text"
+                      rows={6}
+                      x-model="formData.text"
+                    />
+                    <div class="av-row-wrap">
+                      <AvButton type="submit" :disabled="loading">Save about</AvButton>
+                    </div>
+                  </form>
+                </template>
+
+                <template x-if="activeSectionKey === 'skills'">
+                  <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
+                    <template x-for="(group, index) in formData.groups" :key="index">
+                      <div class="av-auth-stack-xs">
+                        <AvInput label="Group name" name="group-name" x-model="group.name" />
+                        <AvTextarea
+                          label="Items (one per line)"
+                          name="group-items"
+                          rows={3}
+                          x-model="group.items"
+                        />
+                      </div>
+                    </template>
+                    <div class="av-row-wrap">
+                      <AvButton type="submit" :disabled="loading">Save skills</AvButton>
+                    </div>
+                  </form>
+                </template>
+
+                <template x-if="activeSectionKey === 'contact'">
+                  <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
+                    <AvInput
+                      label="Call to action title"
+                      name="cta-title"
+                      x-model="formData.callToActionTitle"
+                    />
+                    <AvTextarea
+                      label="Call to action text"
+                      name="cta-text"
+                      rows={4}
+                      x-model="formData.callToActionText"
+                    />
+                    <div class="av-portfolio-form-grid">
+                      <AvInput label="Email" name="contact-email" x-model="formData.email" />
+                      <AvInput label="Website" name="contact-website" x-model="formData.website" />
+                    </div>
+                    <AvTextarea
+                      label="Links (one per line: Label | URL)"
+                      name="contact-links"
+                      rows={4}
+                      x-model="formData.links"
+                    />
+                    <div class="av-row-wrap">
+                      <AvButton type="submit" :disabled="loading">Save contact</AvButton>
+                    </div>
+                  </form>
+                </template>
+
+                <template x-if="activeSectionKey === 'featuredProjects'">
+                  <div class="av-auth-stack-sm">
+                    <div class="av-portfolio-item-list">
+                      <template x-for="item in activeSectionItems" :key="item.id">
+                        <div class="av-portfolio-item-row">
+                          <div>
+                            <p class="av-text-strong" x-text="itemLabel(item)"></p>
+                            <p class="av-text-soft">Featured project</p>
+                          </div>
+                          <div class="av-portfolio-item-actions">
+                            <AvButton variant="ghost" size="sm" type="button" @click.prevent="editItem(item)">Edit</AvButton>
+                            <AvButton variant="ghost" size="sm" type="button" @click.prevent="deleteItem(item.id)">Delete</AvButton>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                    <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
+                      <AvInput label="Project name" name="project-name" x-model="formData.name" />
+                      <AvInput label="Project link" name="project-link" x-model="formData.link" />
+                      <AvTextarea label="Description" name="project-description" rows={3} x-model="formData.description" />
+                      <AvTextarea label="Bullets (one per line)" name="project-bullets" rows={3} x-model="formData.bullets" />
+                      <AvInput label="Tags (comma separated)" name="project-tags" x-model="formData.tags" />
+                      <div class="av-row-wrap">
+                        <AvButton type="submit" :disabled="loading" x-text="editingItemId ? 'Update project' : 'Add project'"></AvButton>
+                      </div>
+                    </form>
+                  </div>
+                </template>
+
+                <template x-if="activeSectionKey === 'experience'">
+                  <div class="av-auth-stack-sm">
+                    <div class="av-portfolio-item-list">
+                      <template x-for="item in activeSectionItems" :key="item.id">
+                        <div class="av-portfolio-item-row">
+                          <div>
+                            <p class="av-text-strong" x-text="itemLabel(item)"></p>
+                            <p class="av-text-soft">Experience entry</p>
+                          </div>
+                          <div class="av-portfolio-item-actions">
+                            <AvButton variant="ghost" size="sm" type="button" @click.prevent="editItem(item)">Edit</AvButton>
+                            <AvButton variant="ghost" size="sm" type="button" @click.prevent="deleteItem(item.id)">Delete</AvButton>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                    <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
+                      <div class="av-portfolio-form-grid">
+                        <AvInput label="Role" name="role" x-model="formData.role" />
+                        <AvInput label="Company" name="company" x-model="formData.company" />
+                      </div>
+                      <div class="av-portfolio-form-grid">
+                        <AvInput label="Start" name="start" x-model="formData.start" />
+                        <AvInput label="End" name="end" x-model="formData.end" />
+                      </div>
+                      <AvInput label="Location" name="location" x-model="formData.location" />
+                      <AvTextarea label="Highlights (one per line)" name="bullets" rows={3} x-model="formData.bullets" />
+                      <div class="av-row-wrap">
+                        <AvButton type="submit" :disabled="loading" x-text="editingItemId ? 'Update experience' : 'Add experience'"></AvButton>
+                      </div>
+                    </form>
+                  </div>
+                </template>
+
+                <template x-if="activeSectionKey === 'education'">
+                  <div class="av-auth-stack-sm">
+                    <div class="av-portfolio-item-list">
+                      <template x-for="item in activeSectionItems" :key="item.id">
+                        <div class="av-portfolio-item-row">
+                          <div>
+                            <p class="av-text-strong" x-text="itemLabel(item)"></p>
+                            <p class="av-text-soft">Education entry</p>
+                          </div>
+                          <div class="av-portfolio-item-actions">
+                            <AvButton variant="ghost" size="sm" type="button" @click.prevent="editItem(item)">Edit</AvButton>
+                            <AvButton variant="ghost" size="sm" type="button" @click.prevent="deleteItem(item.id)">Delete</AvButton>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                    <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
+                      <div class="av-portfolio-form-grid">
+                        <AvInput label="Degree" name="degree" x-model="formData.degree" />
+                        <AvInput label="Field" name="field" x-model="formData.field" />
+                      </div>
+                      <AvInput label="Institution" name="institution" x-model="formData.institution" />
+                      <div class="av-portfolio-form-grid">
+                        <AvInput label="Start" name="start" x-model="formData.start" />
+                        <AvInput label="End" name="end" x-model="formData.end" />
+                        <AvInput label="Grade" name="grade" x-model="formData.grade" />
+                      </div>
+                      <div class="av-row-wrap">
+                        <AvButton type="submit" :disabled="loading" x-text="editingItemId ? 'Update education' : 'Add education'"></AvButton>
+                      </div>
+                    </form>
+                  </div>
+                </template>
+
+                <template x-if="activeSectionKey === 'certifications'">
+                  <div class="av-auth-stack-sm">
+                    <div class="av-portfolio-item-list">
+                      <template x-for="item in activeSectionItems" :key="item.id">
+                        <div class="av-portfolio-item-row">
+                          <div>
+                            <p class="av-text-strong" x-text="itemLabel(item)"></p>
+                            <p class="av-text-soft">Certification</p>
+                          </div>
+                          <div class="av-portfolio-item-actions">
+                            <AvButton variant="ghost" size="sm" type="button" @click.prevent="editItem(item)">Edit</AvButton>
+                            <AvButton variant="ghost" size="sm" type="button" @click.prevent="deleteItem(item.id)">Delete</AvButton>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                    <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
+                      <div class="av-portfolio-form-grid">
+                        <AvInput label="Title" name="title" x-model="formData.title" />
+                        <AvInput label="Issuer" name="issuer" x-model="formData.issuer" />
+                      </div>
+                      <div class="av-portfolio-form-grid">
+                        <AvInput label="Year" name="year" x-model="formData.year" />
+                        <AvInput label="Note" name="note" x-model="formData.note" />
+                      </div>
+                      <div class="av-row-wrap">
+                        <AvButton type="submit" :disabled="loading" x-text="editingItemId ? 'Update certification' : 'Add certification'"></AvButton>
+                      </div>
+                    </form>
+                  </div>
+                </template>
+
+                <template x-if="activeSectionKey === 'achievements'">
+                  <div class="av-auth-stack-sm">
+                    <div class="av-portfolio-item-list">
+                      <template x-for="item in activeSectionItems" :key="item.id">
+                        <div class="av-portfolio-item-row">
+                          <div>
+                            <p class="av-text-strong" x-text="itemLabel(item)"></p>
+                            <p class="av-text-soft">Achievement</p>
+                          </div>
+                          <div class="av-portfolio-item-actions">
+                            <AvButton variant="ghost" size="sm" type="button" @click.prevent="editItem(item)">Edit</AvButton>
+                            <AvButton variant="ghost" size="sm" type="button" @click.prevent="deleteItem(item.id)">Delete</AvButton>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                    <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
+                      <div class="av-portfolio-form-grid">
+                        <AvInput label="Title" name="title" x-model="formData.title" />
+                        <AvInput label="Issuer" name="issuer" x-model="formData.issuer" />
+                      </div>
+                      <div class="av-portfolio-form-grid">
+                        <AvInput label="Year" name="year" x-model="formData.year" />
+                        <AvInput label="Note" name="note" x-model="formData.note" />
+                      </div>
+                      <div class="av-row-wrap">
+                        <AvButton type="submit" :disabled="loading" x-text="editingItemId ? 'Update achievement' : 'Add achievement'"></AvButton>
+                      </div>
+                    </form>
+                  </div>
+                </template>
+
+                <template x-if="activeSectionKey && activeSection">
+                  <div class="av-row-wrap">
+                    <AvButton
+                      type="button"
+                      variant="ghost"
+                      @click.prevent="toggleSectionEnabled(activeSection.id, !activeSection.isEnabled)"
+                      :disabled="loading"
+                    >
+                      <span x-text="activeSection.isEnabled ? 'Hide section' : 'Show section'"></span>
+                    </AvButton>
+                  </div>
+                </template>
+
+                <template x-if="error">
+                  <div class="av-alert av-alert-danger" role="status" x-text="error"></div>
+                </template>
+                <template x-if="success">
+                  <div class="av-alert av-alert-success" role="status" x-text="success"></div>
+                </template>
+              </div>
+            </AvDrawer>
+          </div>
+        </template>
+      </div>
+    </AvContainer>
+  </section>
+</AppShell>

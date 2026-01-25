@@ -1,0 +1,62 @@
+---
+import "@ansiversa/components/styles/global.css";
+import "../styles/global.css";
+import { PortfolioItem, PortfolioProject, PortfolioSection, asc, db, eq, inArray } from "astro:db";
+import PortfolioPreview from "../components/PortfolioPreview.astro";
+import { buildPortfolioDataFromSections, normalizePortfolioItem, normalizePortfolioSection } from "../modules/portfolio-creator/helpers";
+
+const slug = Astro.params.slug ?? "";
+const [project] = await db
+  .select()
+  .from(PortfolioProject)
+  .where(eq(PortfolioProject.slug, slug));
+
+if (!project || !project.isPublished || project.visibility === "private") {
+  return new Response(null, { status: 404 });
+}
+
+const sections = await db
+  .select()
+  .from(PortfolioSection)
+  .where(eq(PortfolioSection.projectId, project.id))
+  .orderBy(asc(PortfolioSection.order));
+
+const sectionIds = sections.map((section) => section.id);
+const items =
+  sectionIds.length === 0
+    ? []
+    : await db
+        .select()
+        .from(PortfolioItem)
+        .where(inArray(PortfolioItem.sectionId, sectionIds))
+        .orderBy(asc(PortfolioItem.order));
+
+const itemsBySection = new Map<string, ReturnType<typeof normalizePortfolioItem>[]>();
+items.forEach((row) => {
+  const normalized = normalizePortfolioItem(row);
+  const bucket = itemsBySection.get(normalized.sectionId) ?? [];
+  bucket.push(normalized);
+  itemsBySection.set(normalized.sectionId, bucket);
+});
+
+const normalizedSections = sections.map((section) => ({
+  ...normalizePortfolioSection(section),
+  items: itemsBySection.get(section.id) ?? [],
+}));
+
+const portfolioData = buildPortfolioDataFromSections(normalizedSections);
+const pageTitle = project.title ? `${project.title} – Portfolio` : "Portfolio";
+const isUnlisted = project.visibility === "unlisted";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    {isUnlisted ? <meta name="robots" content="noindex, nofollow" /> : null}
+  </head>
+  <body>
+    <PortfolioPreview data={portfolioData} />
+  </body>
+</html>

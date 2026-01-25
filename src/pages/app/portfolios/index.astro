@@ -1,0 +1,150 @@
+---
+import {
+  AvButton,
+  AvCard,
+  AvConfirmDialog,
+  AvContainer,
+  AvEmptyState,
+  AvInput,
+} from "@ansiversa/components";
+import { actions } from "astro:actions";
+import AppShell from "../../../layouts/AppShell.astro";
+import type { PortfolioProjectDTO } from "../../../modules/portfolio-creator/types";
+
+const title = "Your Portfolios – Portfolio Creator";
+const description = "Create and manage your portfolios.";
+
+const listResult = await Astro.callAction(actions.portfolioCreator.listProjects, {});
+const data = (listResult as any)?.data ?? (listResult as any) ?? {};
+const projects = (data?.items ?? []) as PortfolioProjectDTO[];
+
+const initialState = {
+  projects,
+  newProject: {
+    title: "",
+  },
+  pendingDeleteId: null,
+};
+---
+
+<AppShell title={title} description={description}>
+  <section class="av-section">
+    <AvContainer>
+      <div
+        class="av-auth-stack-lg"
+        x-data="$store.portfolioCreator"
+        x-init="init && init(JSON.parse($el.dataset.initial))"
+        data-initial={JSON.stringify(initialState)}
+      >
+        <AvCard className="av-auth-card">
+          <div class="av-auth-stack-md">
+            <div class="av-auth-stack-xs">
+              <p class="av-kicker">Portfolio Creator</p>
+              <h1 class="av-section-title">Your portfolios</h1>
+              <p class="av-text-soft">Create a new portfolio or continue editing an existing one.</p>
+            </div>
+
+            <form class="av-auth-stack-sm" @submit.prevent="createProject()">
+              <AvInput
+                label="Portfolio title"
+                name="portfolio-title"
+                placeholder="e.g. Product Designer Portfolio"
+                x-model="newProject.title"
+                required
+              />
+              <div class="av-row-wrap">
+                <AvButton type="submit" :disabled="loading">Create portfolio</AvButton>
+              </div>
+            </form>
+
+            <template x-if="error">
+              <div class="av-alert av-alert-danger" role="status" x-text="error"></div>
+            </template>
+            <template x-if="success">
+              <div class="av-alert av-alert-success" role="status" x-text="success"></div>
+            </template>
+          </div>
+        </AvCard>
+
+        <AvCard variant="soft" className="av-auth-stack-md">
+          <div class="av-row-between">
+            <h2 class="av-card-heading">Portfolio list</h2>
+            <p class="av-text-soft" x-text="projects.length + ' total'"></p>
+          </div>
+
+          <template x-if="projects.length === 0">
+            <AvEmptyState
+              headline="No portfolios yet"
+              description="Create your first portfolio to start editing."
+            />
+          </template>
+
+          <template x-if="projects.length > 0">
+            <div class="av-portfolio-grid">
+              <template x-for="project in projects" :key="project.id">
+                <AvCard variant="soft" className="av-card--fullheight">
+                  <div class="av-auth-stack-sm">
+                    <div class="av-auth-stack-xxs">
+                      <div class="av-portfolio-card__head">
+                        <h3 class="av-card-heading" x-text="project.title"></h3>
+                        <template x-if="project.isPublished">
+                          <span class="av-badge av-badge-soft">Published</span>
+                        </template>
+                      </div>
+                      <div class="av-portfolio-meta">
+                        <span x-text="`/${project.slug}`"></span>
+                        <span x-text="`Visibility: ${project.visibility}`"></span>
+                        <span x-text="`Status: ${project.isPublished ? 'Published' : 'Draft'}`"></span>
+                        <span x-text="project.updatedAt ? `Updated: ${new Date(project.updatedAt).toLocaleDateString()}` : ''"></span>
+                      </div>
+                    </div>
+
+                    <div class="av-row-wrap">
+                      <AvButton
+                        variant="ghost"
+                        size="sm"
+                        href="#"
+                        x-bind:href="`/app/portfolios/${project.id}`"
+                      >
+                        Edit
+                      </AvButton>
+                      <AvButton
+                        variant="ghost"
+                        size="sm"
+                        href="#"
+                        x-bind:href="`/${project.slug}`"
+                        target="_blank"
+                      >
+                        View public
+                      </AvButton>
+                      <AvButton
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        @click.prevent="pendingDeleteId = project.id; window.AvDialog?.open('portfolio-delete-dialog')"
+                        :disabled="loading"
+                      >
+                        Delete
+                      </AvButton>
+                    </div>
+                  </div>
+                </AvCard>
+              </template>
+            </div>
+          </template>
+        </AvCard>
+
+        <AvConfirmDialog
+          id="portfolio-delete-dialog"
+          headline="Delete portfolio?"
+          description="This action cannot be undone."
+          confirmLabel="Delete"
+          cancelLabel="Cancel"
+          variant="danger"
+          @av-confirm="pendingDeleteId && deleteProject(pendingDeleteId)"
+          @av-cancel="pendingDeleteId = null"
+        />
+      </div>
+    </AvContainer>
+  </section>
+</AppShell>

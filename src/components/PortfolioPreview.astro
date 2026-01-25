@@ -1,0 +1,185 @@
+---
+import { AvCard, AvContainer } from "@ansiversa/components";
+import type { PortfolioData } from "../modules/portfolio-creator/helpers";
+
+interface Props {
+  data: PortfolioData;
+}
+
+const { data } = Astro.props as Props;
+const profile = data.profile;
+---
+
+<AvContainer size="default">
+  <div class="av-portfolio-preview">
+    <header class="av-portfolio-preview__header">
+      <div>
+        <h1 class="av-portfolio-preview__name">{profile.fullName || "Portfolio"}</h1>
+        {profile.headline ? <p class="av-portfolio-preview__headline">{profile.headline}</p> : null}
+        {profile.location ? <p class="av-text-soft">{profile.location}</p> : null}
+      </div>
+      <div class="av-portfolio-preview__contact">
+        {profile.email ? <span>{profile.email}</span> : null}
+        {profile.phone ? <span>{profile.phone}</span> : null}
+        {profile.website ? <span>{profile.website}</span> : null}
+        {profile.github ? <span>{profile.github}</span> : null}
+        {profile.linkedin ? <span>{profile.linkedin}</span> : null}
+      </div>
+    </header>
+
+    {data.about.text ? (
+      <AvCard variant="soft" className="av-portfolio-preview__section">
+        <h2 class="av-card-heading">About</h2>
+        <p class="av-text-soft">{data.about.text}</p>
+      </AvCard>
+    ) : null}
+
+    {data.featuredProjects.length > 0 ? (
+      <AvCard variant="soft" className="av-portfolio-preview__section">
+        <h2 class="av-card-heading">Featured Projects</h2>
+        <div class="av-portfolio-preview__list">
+          {data.featuredProjects.map((project) => (
+            <div>
+              <h3 class="av-portfolio-preview__item-title">{project.name || "Project"}</h3>
+              {project.description ? <p class="av-text-soft">{project.description}</p> : null}
+              {project.link ? <p class="av-text-soft">{project.link}</p> : null}
+              {project.tags.length > 0 ? (
+                <div class="av-portfolio-preview__tags">
+                  {project.tags.map((tag) => (
+                    <span class="av-portfolio-preview__tag">{tag}</span>
+                  ))}
+                </div>
+              ) : null}
+              {project.bullets.length > 0 ? (
+                <ul class="av-list">
+                  {project.bullets.map((bullet) => (
+                    <li>{bullet}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      </AvCard>
+    ) : null}
+
+    {data.experience.length > 0 ? (
+      <AvCard variant="soft" className="av-portfolio-preview__section">
+        <h2 class="av-card-heading">Experience</h2>
+        <div class="av-portfolio-preview__list">
+          {data.experience.map((item) => (
+            <div>
+              <h3 class="av-portfolio-preview__item-title">{item.role || "Role"}</h3>
+              <p class="av-text-soft">
+                {[item.company, item.location].filter(Boolean).join(" · ")}
+              </p>
+              <p class="av-text-soft">
+                {[item.start, item.end].filter(Boolean).join(" — ")}
+              </p>
+              {item.bullets.length > 0 ? (
+                <ul class="av-list">
+                  {item.bullets.map((bullet) => (
+                    <li>{bullet}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      </AvCard>
+    ) : null}
+
+    {data.skills.groups.length > 0 ? (
+      <AvCard variant="soft" className="av-portfolio-preview__section">
+        <h2 class="av-card-heading">Skills</h2>
+        <div class="av-portfolio-preview__list">
+          {data.skills.groups.map((group) => (
+            <div>
+              <h3 class="av-portfolio-preview__item-title">{group.name || "Group"}</h3>
+              {group.items.length > 0 ? (
+                <p class="av-text-soft">{group.items.join(", ")}</p>
+              ) : (
+                <p class="av-text-soft">No skills yet.</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </AvCard>
+    ) : null}
+
+    {data.education.length > 0 ? (
+      <AvCard variant="soft" className="av-portfolio-preview__section">
+        <h2 class="av-card-heading">Education</h2>
+        <div class="av-portfolio-preview__list">
+          {data.education.map((item) => (
+            <div>
+              <h3 class="av-portfolio-preview__item-title">{item.degree || "Degree"}</h3>
+              <p class="av-text-soft">
+                {[item.field, item.institution].filter(Boolean).join(" · ")}
+              </p>
+              <p class="av-text-soft">
+                {[item.start, item.end].filter(Boolean).join(" — ")}
+              </p>
+              {item.grade ? <p class="av-text-soft">{item.grade}</p> : null}
+            </div>
+          ))}
+        </div>
+      </AvCard>
+    ) : null}
+
+    {data.certifications.length > 0 ? (
+      <AvCard variant="soft" className="av-portfolio-preview__section">
+        <h2 class="av-card-heading">Certifications</h2>
+        <div class="av-portfolio-preview__list">
+          {data.certifications.map((item) => (
+            <div>
+              <h3 class="av-portfolio-preview__item-title">{item.title || "Certification"}</h3>
+              <p class="av-text-soft">
+                {[item.issuer, item.year].filter(Boolean).join(" · ")}
+              </p>
+              {item.note ? <p class="av-text-soft">{item.note}</p> : null}
+            </div>
+          ))}
+        </div>
+      </AvCard>
+    ) : null}
+
+    {data.achievements.length > 0 ? (
+      <AvCard variant="soft" className="av-portfolio-preview__section">
+        <h2 class="av-card-heading">Achievements</h2>
+        <div class="av-portfolio-preview__list">
+          {data.achievements.map((item) => (
+            <div>
+              <h3 class="av-portfolio-preview__item-title">{item.title || "Achievement"}</h3>
+              <p class="av-text-soft">
+                {[item.issuer, item.year].filter(Boolean).join(" · ")}
+              </p>
+              {item.note ? <p class="av-text-soft">{item.note}</p> : null}
+            </div>
+          ))}
+        </div>
+      </AvCard>
+    ) : null}
+
+    {(data.contact.callToActionTitle ||
+      data.contact.callToActionText ||
+      data.contact.email ||
+      data.contact.website ||
+      data.contact.links.length > 0) ? (
+      <AvCard variant="soft" className="av-portfolio-preview__section">
+        <h2 class="av-card-heading">Contact</h2>
+        {data.contact.callToActionTitle ? <p class="av-text-strong">{data.contact.callToActionTitle}</p> : null}
+        {data.contact.callToActionText ? <p class="av-text-soft">{data.contact.callToActionText}</p> : null}
+        <div class="av-portfolio-preview__list">
+          {data.contact.email ? <p class="av-text-soft">{data.contact.email}</p> : null}
+          {data.contact.website ? <p class="av-text-soft">{data.contact.website}</p> : null}
+          {data.contact.links.map((link) => (
+            <p class="av-text-soft">
+              {link.label ? `${link.label}: ` : ""}{link.url}
+            </p>
+          ))}
+        </div>
+      </AvCard>
+    ) : null}
+  </div>
+</AvContainer>

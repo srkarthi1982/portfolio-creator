@@ -1,6 +1,10 @@
 import type { Alpine } from "alpinejs";
+import { registerPortfolioCreatorStore } from "./modules/portfolio-creator/store";
 
 export default function initAlpine(Alpine: Alpine) {
-  // Intentionally minimal.
-  // Each app will register its own stores here later.
+  registerPortfolioCreatorStore(Alpine);
+
+  if (typeof window !== "undefined") {
+    window.Alpine = Alpine;
+  }
 }

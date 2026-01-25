@@ -1,38 +1,46 @@
-import { defineTable, column, NOW } from "astro:db";
+import { column, defineTable, NOW } from "astro:db";
 
-export const Portfolios = defineTable({
+export const PortfolioProject = defineTable({
   columns: {
     id: column.text({ primaryKey: true }),
     userId: column.text(),
-    title: column.text(),                // e.g. "Frontend Developer Portfolio"
-    summary: column.text({ optional: true }),
-    isDefault: column.boolean({ default: false }),
+    title: column.text(),
+    slug: column.text({ unique: true }),
+    visibility: column.text(),
+    isPublished: column.boolean({ default: false }),
+    publishedAt: column.date({ optional: true }),
+    themeKey: column.text(),
     createdAt: column.date({ default: NOW }),
     updatedAt: column.date({ default: NOW }),
   },
 });
 
-export const PortfolioProjects = defineTable({
+export const PortfolioSection = defineTable({
   columns: {
     id: column.text({ primaryKey: true }),
-    portfolioId: column.text({
-      references: () => Portfolios.columns.id,
-    }),
-    title: column.text(),            // project title
-    role: column.text({ optional: true }),       // e.g. "Lead Developer"
-    companyName: column.text({ optional: true }),
-    startDate: column.date({ optional: true }),
-    endDate: column.date({ optional: true }),
-    isCurrent: column.boolean({ default: false }),
-    description: column.text({ optional: true }),
-    skills: column.text({ optional: true }),     // comma-separated or JSON tags
-    orderIndex: column.number({ optional: true }),
+    projectId: column.text(),
+    key: column.text(),
+    label: column.text(),
+    order: column.number(),
+    isEnabled: column.boolean({ default: true }),
     createdAt: column.date({ default: NOW }),
     updatedAt: column.date({ default: NOW }),
   },
 });
 
-export const tables = {
-  Portfolios,
-  PortfolioProjects,
+export const PortfolioItem = defineTable({
+  columns: {
+    id: column.text({ primaryKey: true }),
+    sectionId: column.text(),
+    order: column.number(),
+    data: column.text(),
+    createdAt: column.date({ default: NOW }),
+    updatedAt: column.date({ default: NOW }),
+  },
+});
+
+export const portfolioTables = {
+  PortfolioProject,
+  PortfolioSection,
+  PortfolioItem,
 } as const;

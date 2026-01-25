@@ -1,121 +1,79 @@
-# Ansiversa Mini-App Starter
+# Ansiversa Portfolio Creator
 
-This repository is the official starter template for all **Ansiversa Mini-Apps**.  
-Every app in the Ansiversa ecosystem begins with this structure—clean, fast, and consistent.
+Portfolio Creator is an Ansiversa mini-app that lets users build, edit, and publish personal portfolios with a clean public page.
 
-If you are a developer or contributor, you can use this template to build any app in the ecosystem.
+## Freeze status
 
----
+Portfolio Creator v1 (frozen requirements).
 
-## 🚀 Features
+## Quick start
 
-- **Astro 5** — blazing-fast frontend framework  
-- **Tailwind CSS** — utility-first styling  
-- **@ansiversa/components** — shared UI library for unified design  
-- **Global Styles** — imported automatically from the components package  
-- **Clean File Structure** — easy to extend for any type of app  
-- **Ready for Deployment** — optimized for Vercel out of the box  
-
----
-
-## 📁 Project Structure
+1) Install dependencies
 
 ```
-app/
- ├── public/
- ├── src/
- │   ├── layouts/
- │   │   └── AppShell.astro
- │   └── pages/
- │       ├── index.astro
- │       └── login.astro
- ├── astro.config.mjs
- ├── package.json
- ├── tsconfig.json
- ├── postcss.config.cjs
- └── tailwind.config.cjs
+npm ci
 ```
 
----
+2) Configure env vars (see `src/env.d.ts` for the full list)
 
-## 🧩 Using Ansiversa Components
+- `ANSIVERSA_AUTH_SECRET`
+- `ANSIVERSA_SESSION_SECRET`
+- `ANSIVERSA_COOKIE_DOMAIN`
+- `PUBLIC_ROOT_APP_URL` (optional)
+- `PARENT_APP_URL` (optional)
 
-All apps share the same UI look and feel using:
+Note: `ANSIVERSA_AUTH_SECRET` is reserved for future auth workflows (not used in this app yet).
 
-```ts
-import "@ansiversa/components/styles/global.css";
-import { WebLayout, AuthLayout } from "@ansiversa/components";
+3) Run the app
+
 ```
-
-This ensures:
-
-- Perfect consistency across **100+ apps**
-- Unified branding  
-- Fully reusable layouts and UI blocks  
-
----
-
-## ▶️ Running Locally
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Start the development server:
-
-```bash
 npm run dev
 ```
 
-Build for production:
+## Local dev without parent app
 
-```bash
-npm run build
+If you do not have the parent app session cookie, you can enable a DEV-only auth bypass
+ to inject a dummy session during local development:
+
+```
+DEV_BYPASS_AUTH=true npm run dev
 ```
 
-Preview production build:
+Optional overrides (defaults shown):
 
-```bash
-npm run preview
+```
+DEV_BYPASS_USER_ID=dev-user
+DEV_BYPASS_EMAIL=dev@local
+DEV_BYPASS_ROLE_ID=1
 ```
 
----
+⚠️ This bypass only works in local development (import.meta.env.DEV) and is ignored in
+production builds.
 
-## 🌐 Deployment
+## First run checklist
 
-Ansiversa apps are optimized for **Vercel**:
+You should be able to:
 
-- No configuration required
-- Astro server output ready
-- CI/CD supported automatically
+- Start the app with `npm run dev`
+- Open `/app/portfolios` and create a new portfolio
+- Open `/app/portfolios/[id]` to edit sections with the drawer workflow
+- Publish the portfolio and access the public route at `/<slug>`
 
-Just link your repo to Vercel → deploy.
+If this works, your setup is correct.
 
----
+## Commands
 
-## 🔗 About Ansiversa
+- `npm run dev`
+- `npm run typecheck` (Astro check)
+- `npm run build`
+- `npm run db:push`
 
-Ansiversa is a curated ecosystem of 100+ premium mini-apps designed for learning, productivity, writing, creativity, utilities, wellness, and more.
+## Database workflow (standard)
 
-Each app shares:
-
-- One global design language  
-- One component system  
-- One identity  
-- Premium UX  
-
-You are currently viewing the official **starter template** that powers all apps.
-
----
-
-## 🤝 Contributing
-
-If you wish to contribute to this template or suggest improvements, please open an issue or submit a pull request.
+This app intentionally uses file-based remote DB locally for consistency.
+`npm run dev` and `npm run build` run in `--remote` mode against `.astro/content.db`.
+Use `npm run db:push` as the single schema push command.
 
 ---
 
-## 📄 License
-
-MIT License — free to use and modify.
+Ansiversa motto: Make it simple — but not simpler.

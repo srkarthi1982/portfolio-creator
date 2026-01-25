@@ -1,7 +1,10 @@
-import { defineDb } from 'astro:db';
-import { tables } from './tables';
+import { defineDb } from "astro:db";
+import { PortfolioItem, PortfolioProject, PortfolioSection } from "./tables";
 
-// https://astro.build/db/config
 export default defineDb({
-  tables,
+  tables: {
+    PortfolioProject,
+    PortfolioSection,
+    PortfolioItem,
+  },
 });

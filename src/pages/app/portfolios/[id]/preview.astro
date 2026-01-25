@@ -1,0 +1,40 @@
+---
+import "@ansiversa/components/styles/global.css";
+import "../../../../styles/global.css";
+import { actions } from "astro:actions";
+import PortfolioPreview from "../../../../components/PortfolioPreview.astro";
+import { buildPortfolioDataFromSections } from "../../../../modules/portfolio-creator/helpers";
+import type { PortfolioProjectDetail } from "../../../../modules/portfolio-creator/types";
+
+const projectId = Astro.params.id ?? "";
+let projectData: PortfolioProjectDetail | null = null;
+let loadError: string | null = null;
+
+try {
+  const result = await Astro.callAction(actions.portfolioCreator.getProject, { projectId });
+  const data = (result as any)?.data ?? (result as any) ?? null;
+  projectData = data as PortfolioProjectDetail;
+} catch (err) {
+  loadError = (err as Error)?.message ?? "Unable to load portfolio.";
+}
+
+const portfolioData = projectData ? buildPortfolioDataFromSections(projectData.sections ?? []) : null;
+const pageTitle = projectData?.project?.title
+  ? `${projectData.project.title} – Preview`
+  : "Portfolio Preview";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    {loadError ? (
+      <div class="av-alert av-alert-danger" role="status">{loadError}</div>
+    ) : portfolioData ? (
+      <PortfolioPreview data={portfolioData} />
+    ) : null}
+  </body>
+</html>
