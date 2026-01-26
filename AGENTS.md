@@ -24,3 +24,4 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 - 2026-01-25 Backed up `.astro/content.db` to `.astro/content.db.bak-20260125-1235` before schema push.
 - 2026-01-25 Verified webhook live: POST to `http://localhost:4322/api/webhooks/portfolio-creator-activity.json` returned 204 and Dashboard row updated for appId `portfolio-creator` (userId `2e3633d2-47bd-4885-acb2-24a0fa454f70`, summaryVersion 1).
 - 2026-01-26 Fixed Astro DB scripts overriding remote envs by removing hardcoded ASTRO_DB_REMOTE_URL; added .env.example guidance and ignored .env.local/.env.*.local so Vercel uses env vars.
+- 2026-01-26 Bumped @ansiversa/components to ^0.0.117 to align with latest resume schema (declaration field).
