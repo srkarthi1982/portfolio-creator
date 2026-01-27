@@ -16,6 +16,7 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## 2. Portfolio Creator V1 (In progress)
 
+- 2026-01-27 Bumped @ansiversa/components to ^0.0.118 and enabled AvMiniAppBar via APP_KEY in AppShell.
 - 2026-01-25 Implemented Portfolio Creator v1 structure: DB tables `PortfolioProject`, `PortfolioSection`, `PortfolioItem`, plus actions, store, and routes.
 - 2026-01-25 Routes added: `/app/portfolios`, `/app/portfolios/[id]`, `/app/portfolios/[id]/preview`, and public `/<slug>` with publish/visibility rules (unlisted adds noindex).
 - 2026-01-25 Dashboard push + summary v1: appId `portfolio-creator`, webhook target `/api/webhooks/portfolio-creator-activity.json`.
