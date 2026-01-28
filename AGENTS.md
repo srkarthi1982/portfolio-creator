@@ -16,6 +16,11 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## 2. Portfolio Creator V1 (In progress)
 
+- 2026-01-28 Added local ASTRO_DB_REMOTE_URL in .env to prevent ActionsCantBeLoaded invalid URL in dev.
+- 2026-01-28 Bumped @ansiversa/components to ^0.0.119 for WebLayout mini-app links.
+- 2026-01-28 Added portfolio-creator mini-app links (Home, Portfolios) via AppShell props for AvMiniAppBar.
+- 2026-01-28 Added local/remote dev+build scripts for dual DB mode support.
+- 2026-01-28 Ran `npm run db:push` with remote envs to recreate portfolio-creator tables on remote DB.
 - 2026-01-27 Bumped @ansiversa/components to ^0.0.118 and enabled AvMiniAppBar via APP_KEY in AppShell.
 - 2026-01-25 Implemented Portfolio Creator v1 structure: DB tables `PortfolioProject`, `PortfolioSection`, `PortfolioItem`, plus actions, store, and routes.
 - 2026-01-25 Routes added: `/app/portfolios`, `/app/portfolios/[id]`, `/app/portfolios/[id]/preview`, and public `/<slug>` with publish/visibility rules (unlisted adds noindex).
