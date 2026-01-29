@@ -16,6 +16,8 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## 2. Portfolio Creator V1 (In progress)
 
+- 2026-01-29 Added parent notification helper and wired portfolio create/publish/update notifications.
+
 - 2026-01-28 Added local ASTRO_DB_REMOTE_URL in .env to prevent ActionsCantBeLoaded invalid URL in dev.
 - 2026-01-28 Bumped @ansiversa/components to ^0.0.119 for WebLayout mini-app links.
 - 2026-01-28 Added portfolio-creator mini-app links (Home, Portfolios) via AppShell props for AvMiniAppBar.
@@ -31,3 +33,9 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 - 2026-01-25 Verified webhook live: POST to `http://localhost:4322/api/webhooks/portfolio-creator-activity.json` returned 204 and Dashboard row updated for appId `portfolio-creator` (userId `2e3633d2-47bd-4885-acb2-24a0fa454f70`, summaryVersion 1).
 - 2026-01-26 Fixed Astro DB scripts overriding remote envs by removing hardcoded ASTRO_DB_REMOTE_URL; added .env.example guidance and ignored .env.local/.env.*.local so Vercel uses env vars.
 - 2026-01-26 Bumped @ansiversa/components to ^0.0.117 to align with latest resume schema (declaration field).
+
+## Verification Log
+
+- 2026-01-29 `npm run typecheck` (pass; 1 hint in baseRepository).
+- 2026-01-29 `npm run build` (pass).
+- 2026-01-29 Smoke test: not run (manual create/publish portfolio).

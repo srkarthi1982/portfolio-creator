@@ -23,6 +23,7 @@ import {
 } from "../modules/portfolio-creator/helpers";
 import { buildPortfolioDashboardSummary } from "../dashboard/summary.schema";
 import { pushPortfolioCreatorActivity } from "../lib/pushActivity";
+import { notifyParent } from "../lib/notifyParent";
 import type { PortfolioSectionKey, PortfolioVisibility } from "../modules/portfolio-creator/types";
 
 const projectSchema = z.object({
@@ -322,6 +323,15 @@ export const createProject = defineAction({
 
     await pushDashboardActivity(user.id, { event: "portfolio.created", entityId: project.id });
 
+    void notifyParent({
+      appKey: "portfolio-creator",
+      userId: user.id,
+      title: "Portfolio created",
+      message: `Portfolio “${project.title}” is ready.`,
+      level: "success",
+      meta: { projectId: project.id },
+    });
+
     return {
       project: normalizePortfolioProject(project),
       sections: sections.map((section) => ({
@@ -419,6 +429,17 @@ export const updateProject = defineAction({
       entityId: projectId,
     });
 
+    if (updated?.title) {
+      void notifyParent({
+        appKey: "portfolio-creator",
+        userId: user.id,
+        title: "Portfolio updated",
+        message: `Portfolio “${updated.title}” was updated.`,
+        level: "info",
+        meta: { projectId },
+      });
+    }
+
     return { project: normalizePortfolioProject(updated) };
   },
 });
@@ -468,6 +489,17 @@ export const setPublish = defineAction({
     await pushDashboardActivity(user.id, {
       event: isPublished ? "portfolio.published" : "portfolio.unpublished",
       entityId: projectId,
+    });
+
+    void notifyParent({
+      appKey: "portfolio-creator",
+      userId: user.id,
+      title: isPublished ? "Portfolio published" : "Portfolio unpublished",
+      message: isPublished
+        ? `Portfolio “${project.title}” is now live.`
+        : `Portfolio “${project.title}” was unpublished.`,
+      level: isPublished ? "success" : "warning",
+      meta: { projectId, isPublished },
     });
 
     return { project: normalizePortfolioProject(project) };
