@@ -16,6 +16,7 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## 2. Portfolio Creator V1 (In progress)
 
+- 2026-01-30 Rebuilt landing page to match Resume Builder structure with portfolio-specific copy and layout sections.
 - 2026-01-29 Added parent notification helper and wired portfolio create/publish/update notifications.
 
 - 2026-01-28 Added local ASTRO_DB_REMOTE_URL in .env to prevent ActionsCantBeLoaded invalid URL in dev.

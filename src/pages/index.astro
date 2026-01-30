@@ -1,31 +1,399 @@
 ---
-import { AvButton, AvCard, AvContainer } from "@ansiversa/components";
+import { AvButton, AvCard, AvContainer, AvTimeline } from "@ansiversa/components";
 import AppShell from "../layouts/AppShell.astro";
 
 const title = "Portfolio Creator – Ansiversa";
-const description = "Build and publish a clean portfolio in minutes.";
+const description = "Craft clean, client-ready portfolios and publish them in minutes.";
+
+const layouts = [
+  {
+    name: "Case Study",
+    description: "Problem, process, and impact with structured storytelling.",
+    layout: "case-study",
+  },
+  {
+    name: "Gallery",
+    description: "Visual-first layout to highlight screenshots and deliverables.",
+    layout: "gallery",
+  },
+  {
+    name: "Minimal",
+    description: "Simple, focused design for tight, readable summaries.",
+    layout: "minimal",
+  },
+  {
+    name: "Story",
+    description: "Narrative flow that reads like a polished project recap.",
+    layout: "story",
+  },
+];
+
+const portfolioTimelineItems = [
+  {
+    date: "Pillar 01",
+    title: "Public sharing controls",
+    body: "Publish, unlist, or keep drafts private with simple visibility rules.",
+  },
+  {
+    date: "Pillar 02",
+    title: "Multiple portfolios per user",
+    body: "Build different collections for clients, roles, or industries.",
+  },
+  {
+    date: "Pillar 03",
+    title: "Structured project builder",
+    body: "Keep goals, approach, and results organized without clutter.",
+  },
+  {
+    date: "Pillar 04",
+    title: "Clean, responsive output",
+    body: "Layouts designed for quick scanning and polished presentation.",
+  },
+  {
+    date: "Pillar 05",
+    title: "Fast editing workflow",
+    body: "Update entries and publish changes without rebuilding everything.",
+  },
+  {
+    date: "Pillar 06",
+    title: "Consistent branding",
+    body: "Keep your work cohesive across every project you ship.",
+  },
+];
 ---
 
 <AppShell title={title} description={description}>
-  <section class="av-section">
-    <AvContainer>
-      <div class="av-auth-stack-lg">
-        <AvCard className="av-auth-card">
-          <div class="av-auth-stack-md">
-            <div class="av-auth-stack-xs">
-              <p class="av-kicker">Portfolio Creator</p>
-              <h1 class="av-section-title">Build a portfolio that feels premium</h1>
-              <p class="av-text-soft">
-                Create multiple portfolios, manage visibility, and share a clean public page from one place.
-              </p>
-            </div>
-
-            <div class="av-row-wrap">
-              <AvButton href="/app/portfolios">Open portfolio creator</AvButton>
-            </div>
+  <section class="pc-hero">
+    <AvContainer size="default">
+      <div class="pc-hero__grid">
+        <div class="pc-hero__text">
+          <div class="av-kicker">
+            <span>Career · Ansiversa Mini App</span>
           </div>
-        </AvCard>
+          <h1 class="pc-hero__title">Portfolio Creator</h1>
+          <p class="pc-hero__lead">
+            Craft clean, client-ready portfolios and publish them in minutes.
+          </p>
+          <div class="pc-hero__bullets">
+            <span>Structured project stories without messy docs</span>
+            <span>Multiple portfolios, each with its own visibility</span>
+            <span>Share a polished public page with one click</span>
+          </div>
+          <div class="pc-hero__cta">
+            <AvButton href="/app/portfolios">Create Portfolio</AvButton>
+            <AvButton href="#layouts" variant="ghost">View Layouts</AvButton>
+          </div>
+          <p class="pc-hero__note">Focused stories. Clean design. Ready to share.</p>
+        </div>
+
+        <div class="pc-hero__panel">
+          <AvCard className="pc-hero__panel-card">
+            <p class="pc-hero__panel-kicker">Portfolio flow</p>
+            <h3 class="pc-hero__panel-title">Create → Structure → Publish</h3>
+            <ol class="pc-hero__panel-steps">
+              <li><span>1</span>Name your portfolio</li>
+              <li><span>2</span>Add projects and details</li>
+              <li><span>3</span>Publish or keep it unlisted</li>
+            </ol>
+            <div class="pc-hero__panel-footer">
+              <div>
+                <p class="pc-hero__panel-label">Layouts</p>
+                <p class="pc-hero__panel-value">4 clean styles</p>
+              </div>
+              <div>
+                <p class="pc-hero__panel-label">Sharing</p>
+                <p class="pc-hero__panel-value">Public + unlisted</p>
+              </div>
+            </div>
+          </AvCard>
+        </div>
       </div>
     </AvContainer>
   </section>
+
+  <section class="av-section" id="layouts">
+    <AvContainer size="default">
+      <div class="pc-section__header">
+        <h2 class="av-section-title">Layouts</h2>
+        <p class="av-section-lead">
+          Four layouts that balance story, visuals, and clarity.
+        </p>
+      </div>
+      <div class="pc-layout-grid">
+        {layouts.map((layout) => (
+          <AvCard className="pc-layout-card">
+            <div class="av-auth-stack-sm">
+              <h3 class="av-card-heading">{layout.name}</h3>
+              <div class="pc-layout-wireframe" aria-hidden="true">
+                {layout.layout === "case-study" && (
+                  <svg viewBox="0 0 240 140" role="presentation">
+                    <rect x="16" y="16" width="140" height="12" rx="6" />
+                    <rect x="16" y="34" width="88" height="8" rx="4" />
+                    <rect x="16" y="54" width="208" height="10" rx="5" />
+                    <rect x="16" y="72" width="208" height="10" rx="5" />
+                    <rect x="16" y="90" width="208" height="10" rx="5" />
+                  </svg>
+                )}
+                {layout.layout === "gallery" && (
+                  <svg viewBox="0 0 240 140" role="presentation">
+                    <rect x="16" y="16" width="112" height="12" rx="6" />
+                    <rect x="16" y="36" width="168" height="8" rx="4" />
+                    <rect x="16" y="56" width="100" height="68" rx="10" />
+                    <rect x="126" y="56" width="98" height="30" rx="10" />
+                    <rect x="126" y="94" width="98" height="30" rx="10" />
+                  </svg>
+                )}
+                {layout.layout === "minimal" && (
+                  <svg viewBox="0 0 240 140" role="presentation">
+                    <rect x="54" y="16" width="132" height="10" rx="5" />
+                    <rect x="40" y="34" width="160" height="6" rx="3" />
+                    <rect x="32" y="54" width="176" height="8" rx="4" />
+                    <rect x="32" y="72" width="176" height="8" rx="4" />
+                    <rect x="32" y="90" width="124" height="8" rx="4" />
+                    <rect x="32" y="108" width="148" height="8" rx="4" />
+                  </svg>
+                )}
+                {layout.layout === "story" && (
+                  <svg viewBox="0 0 240 140" role="presentation">
+                    <rect x="18" y="16" width="116" height="10" rx="5" />
+                    <rect x="18" y="36" width="192" height="8" rx="4" />
+                    <rect x="18" y="56" width="192" height="8" rx="4" />
+                    <rect x="18" y="76" width="192" height="8" rx="4" />
+                    <rect x="18" y="96" width="144" height="8" rx="4" />
+                  </svg>
+                )}
+              </div>
+              <p class="av-text-soft">{layout.description}</p>
+              <AvButton href="/app/portfolios" size="sm" variant="ghost">
+                Use this layout
+              </AvButton>
+            </div>
+          </AvCard>
+        ))}
+      </div>
+    </AvContainer>
+  </section>
+
+  <section class="av-section">
+    <AvContainer size="default">
+      <div class="pc-section__header">
+        <h2 class="av-section-title">Why Portfolio Creator</h2>
+        <p class="av-section-lead">
+          Everything you need to publish a premium portfolio without the busywork.
+        </p>
+      </div>
+      <AvTimeline items={portfolioTimelineItems} />
+    </AvContainer>
+  </section>
+
+  <section class="av-section pc-process">
+    <AvContainer size="default">
+      <div class="av-section-header">
+        <div class="av-kicker">
+          <span>How it works</span>
+        </div>
+        <h2 class="av-section-title">Create → Structure → Publish</h2>
+        <p class="av-section-lead">
+          Three steps from blank page to shareable portfolio.
+        </p>
+      </div>
+
+      <ol class="av-steps">
+        <li class="av-step">
+          <span class="av-step-number">1</span>
+          <div class="av-step-body">
+            <h3 class="av-card-heading">Create a portfolio</h3>
+            <p>Name the collection and decide the audience.</p>
+          </div>
+        </li>
+
+        <li class="av-step">
+          <span class="av-step-number">2</span>
+          <div class="av-step-body">
+            <h3 class="av-card-heading">Structure each project</h3>
+            <p>Capture goals, responsibilities, and outcomes in minutes.</p>
+          </div>
+        </li>
+
+        <li class="av-step">
+          <span class="av-step-number">3</span>
+          <div class="av-step-body">
+            <h3 class="av-card-heading">Publish</h3>
+            <p>Share a clean public page or keep it unlisted.</p>
+          </div>
+        </li>
+      </ol>
+    </AvContainer>
+  </section>
+
+  <section class="av-section">
+    <AvContainer size="default">
+      <AvCard className="pc-cta">
+        <div class="pc-cta__content">
+          <div class="av-auth-stack-xxs">
+            <h2 class="av-section-title">Ready to build your portfolio?</h2>
+            <p class="av-text-soft">
+              Start a portfolio and publish your work with a clean public page.
+            </p>
+          </div>
+          <AvButton href="/app/portfolios">Create Portfolio</AvButton>
+        </div>
+      </AvCard>
+    </AvContainer>
+  </section>
 </AppShell>
+
+<style>
+  .pc-hero {
+    padding: 72px 0 48px;
+  }
+
+  .pc-hero__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 32px;
+    align-items: center;
+  }
+
+  .pc-hero__title {
+    font-size: clamp(2.5rem, 4vw, 3.5rem);
+    line-height: 1.05;
+    margin: 0;
+  }
+
+  .pc-hero__lead {
+    font-size: 1.1rem;
+    color: var(--av-text-soft);
+  }
+
+  .pc-hero__bullets {
+    display: grid;
+    gap: 8px;
+    color: var(--av-text-soft);
+  }
+
+  .pc-hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+
+  .pc-hero__note {
+    margin: 0;
+    color: var(--av-text-soft);
+  }
+
+  .pc-hero__panel-card {
+    padding: 24px;
+  }
+
+  .pc-hero__panel-kicker {
+    margin: 0 0 4px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--av-text-soft);
+  }
+
+  .pc-hero__panel-title {
+    margin: 0 0 16px;
+  }
+
+  .pc-hero__panel-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 10px;
+  }
+
+  .pc-hero__panel-steps li {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    color: var(--av-text-soft);
+  }
+
+  .pc-hero__panel-steps span {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--av-surface-subtle, rgba(255, 255, 255, 0.08));
+    color: var(--av-text-strong, #fff);
+    font-size: 0.85rem;
+  }
+
+  .pc-hero__panel-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 20px;
+    color: var(--av-text-soft);
+  }
+
+  .pc-hero__panel-label {
+    margin: 0;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .pc-hero__panel-value {
+    margin: 4px 0 0;
+    font-weight: 600;
+    color: var(--av-text-strong, #fff);
+  }
+
+  .pc-section__header {
+    margin-bottom: 24px;
+  }
+
+  .pc-layout-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .pc-layout-card {
+    padding: 20px;
+  }
+
+  .pc-layout-wireframe {
+    display: grid;
+    place-items: center;
+    height: 160px;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: linear-gradient(140deg, rgba(15, 23, 42, 0.75), rgba(30, 41, 59, 0.35));
+  }
+
+  .pc-layout-wireframe svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .pc-layout-wireframe rect {
+    fill: rgba(148, 163, 184, 0.45);
+  }
+
+  .pc-process {
+    padding-top: 32px;
+  }
+
+  .pc-cta {
+    padding: 24px;
+  }
+
+  .pc-cta__content {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+</style>
