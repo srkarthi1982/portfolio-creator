@@ -16,6 +16,7 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## 2. Portfolio Creator V1 (In progress)
 
+- 2026-02-01 Added `/help` page and wired Help link into the mini-app menu.
 - 2026-02-01 Verified Portfolio Creator Pro gating: UI disabled/pro badges correct, server guards return PAYMENT_REQUIRED, delete remains allowed; access control locked and aligned with Quiz + Resume Builder.
 - 2026-02-01 Removed "Use this layout" buttons from landing page layout cards (V1 simplification).
 - 2026-02-01 Added Pro gating for templates 3/4 (UI disabled + Pro badge + pricing CTA) and server-side PAYMENT_REQUIRED guards across portfolio actions (create/edit/preview/publish/mutate). Delete remains allowed for free users. Template keys normalized to classic/gallery/minimal/story.
@@ -42,6 +43,8 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## Verification Log
 
+- 2026-02-01 `npm run typecheck` (pass; 1 hint in baseRepository).
+- 2026-02-01 `npm run build` (pass).
 - 2026-02-01 Pending manual check: free user sees templates 3/4 disabled + Pro badge; direct preview/publish returns PAYMENT_REQUIRED; delete allowed. Paid user can use all templates.
 - 2026-01-31 Pending manual check: paid user sees non-null fields; free user sees null/false in `Astro.locals.user`.
 - 2026-01-31 Pending manual check: `/admin/session` shows isPaid true for paid user and false for free user.

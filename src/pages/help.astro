@@ -1,0 +1,76 @@
+---
+import { AvBreadcrumb, AvButton, AvCard, AvContainer } from "@ansiversa/components";
+import AppShell from "../layouts/AppShell.astro";
+
+const title = "Help – Portfolio Creator";
+const description = "Learn how to build and publish your portfolio.";
+---
+
+<AppShell title={title} description={description}>
+  <section class="av-faq-public__crumb">
+    <AvContainer>
+      <AvBreadcrumb items={[{ label: "Home", href: "/" }, { label: "Help" }]} />
+    </AvContainer>
+  </section>
+
+  <section class="av-section">
+    <AvContainer>
+      <div class="av-auth-stack-lg">
+        <AvCard className="av-auth-stack-md">
+          <div>
+            <p class="av-kicker">Portfolio Creator</p>
+            <h1 class="av-section-title">Help</h1>
+            <p class="av-text-soft">
+              Build a polished portfolio with structured sections, previews, and publishing tools.
+            </p>
+          </div>
+          <div class="av-row-wrap">
+            <AvButton href="/app/portfolios">Go to portfolios</AvButton>
+          </div>
+        </AvCard>
+
+        <AvCard variant="soft" className="av-auth-stack-md">
+          <div class="av-auth-stack-sm">
+            <h2 class="av-card-heading">How to start</h2>
+            <div class="av-auth-stack-xs">
+              <p class="av-text-soft">• Create a portfolio project.</p>
+              <p class="av-text-soft">• Choose a template and edit sections.</p>
+              <p class="av-text-soft">• Preview and publish when ready.</p>
+            </div>
+          </div>
+        </AvCard>
+
+        <AvCard variant="soft" className="av-auth-stack-md">
+          <div class="av-auth-stack-sm">
+            <h2 class="av-card-heading">Key features</h2>
+            <div class="av-auth-stack-xs">
+              <p class="av-text-soft">• Section-based layout builder.</p>
+              <p class="av-text-soft">• Public preview and publish flow.</p>
+              <p class="av-text-soft">• Visibility controls for shared links.</p>
+            </div>
+          </div>
+        </AvCard>
+
+        <AvCard variant="soft" className="av-auth-stack-md">
+          <div class="av-auth-stack-sm">
+            <h2 class="av-card-heading">Free vs Pro</h2>
+            <div class="av-auth-stack-xs">
+              <p class="av-text-soft">• Free: Templates 1–2.</p>
+              <p class="av-text-soft">• Pro: Templates 3–4 unlocked.</p>
+            </div>
+          </div>
+        </AvCard>
+
+        <AvCard variant="soft" className="av-auth-stack-md">
+          <div class="av-auth-stack-sm">
+            <h2 class="av-card-heading">Troubleshooting</h2>
+            <div class="av-auth-stack-xs">
+              <p class="av-text-soft">• If publish fails, re-check required fields.</p>
+              <p class="av-text-soft">• Ensure you are signed in to save changes.</p>
+            </div>
+          </div>
+        </AvCard>
+      </div>
+    </AvContainer>
+  </section>
+</AppShell>

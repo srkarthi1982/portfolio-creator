@@ -10,6 +10,9 @@ import type {
 } from "./types";
 import { TEMPLATE_KEYS, TEMPLATE_OPTIONS, isProTemplate, sectionLabels } from "./helpers";
 
+type TemplateKey = (typeof TEMPLATE_OPTIONS)[number]["key"];
+const DEFAULT_TEMPLATE_KEY = TEMPLATE_OPTIONS[0].key as TemplateKey;
+
 const SINGLE_SECTIONS: PortfolioSectionKey[] = ["profile", "about", "skills", "contact"];
 const PAYWALL_MESSAGE = "This template is available in Pro.";
 
@@ -30,14 +33,14 @@ const defaultState = () => ({
   templateOptions: TEMPLATE_OPTIONS,
   newProject: {
     title: "",
-    themeKey: TEMPLATE_OPTIONS[0].key,
+    themeKey: DEFAULT_TEMPLATE_KEY,
   },
   projectMeta: {
     title: "",
     slug: "",
     visibility: "private" as PortfolioVisibility,
     isPublished: false,
-    themeKey: TEMPLATE_OPTIONS[0].key,
+    themeKey: DEFAULT_TEMPLATE_KEY,
   },
   pendingDeleteId: null as string | null,
 });
@@ -45,6 +48,13 @@ const defaultState = () => ({
 const normalizeText = (value?: string | null) => {
   const trimmed = (value ?? "").toString().trim();
   return trimmed ? trimmed : "";
+};
+
+const toTemplateKey = (value?: string | null): TemplateKey => {
+  if (value && TEMPLATE_KEYS.includes(value as TemplateKey)) {
+    return value as TemplateKey;
+  }
+  return DEFAULT_TEMPLATE_KEY;
 };
 
 const toLines = (value: any) => {
@@ -306,13 +316,13 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
   isPaid = false;
   paywallMessage: string | null = null;
   templateOptions = TEMPLATE_OPTIONS;
-  newProject = { title: "", themeKey: TEMPLATE_OPTIONS[0].key };
+  newProject = { title: "", themeKey: DEFAULT_TEMPLATE_KEY };
   projectMeta = {
     title: "",
     slug: "",
     visibility: "private" as PortfolioVisibility,
     isPublished: false,
-    themeKey: TEMPLATE_OPTIONS[0].key,
+    themeKey: DEFAULT_TEMPLATE_KEY,
   };
   pendingDeleteId: string | null = null;
 
@@ -323,7 +333,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
     this.activeProjectId = initial.activeProjectId ?? this.activeProject?.project?.id ?? null;
     this.newProject = {
       title: initial.newProject?.title ?? "",
-      themeKey: (initial.newProject?.themeKey ?? TEMPLATE_OPTIONS[0].key) as string,
+      themeKey: (initial.newProject?.themeKey ?? DEFAULT_TEMPLATE_KEY) as TemplateKey,
     };
     this.isPaid = Boolean(initial.isPaid);
 
@@ -333,7 +343,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
         slug: this.activeProject.project.slug,
         visibility: this.activeProject.project.visibility,
         isPublished: this.activeProject.project.isPublished,
-        themeKey: this.activeProject.project.themeKey ?? TEMPLATE_OPTIONS[0].key,
+        themeKey: (this.activeProject.project.themeKey ?? DEFAULT_TEMPLATE_KEY) as TemplateKey,
       };
     }
   }
@@ -369,21 +379,23 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
   }
 
   selectNewTemplate(templateKey: string) {
-    if (this.isTemplateLocked(templateKey)) {
+    const normalized = toTemplateKey(templateKey);
+    if (this.isTemplateLocked(normalized)) {
       this.paywallMessage = PAYWALL_MESSAGE;
       return;
     }
     this.paywallMessage = null;
-    this.newProject.themeKey = templateKey;
+    this.newProject.themeKey = normalized;
   }
 
   selectProjectTemplate(templateKey: string) {
-    if (this.isTemplateLocked(templateKey)) {
+    const normalized = toTemplateKey(templateKey);
+    if (this.isTemplateLocked(normalized)) {
       this.paywallMessage = PAYWALL_MESSAGE;
       return;
     }
     this.paywallMessage = null;
-    this.projectMeta.themeKey = templateKey;
+    this.projectMeta.themeKey = normalized;
   }
 
   private bumpPreview() {
@@ -425,7 +437,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
 
   async createProject() {
     const title = normalizeText(this.newProject.title);
-    const themeKey = (this.newProject.themeKey || TEMPLATE_OPTIONS[0].key) as string;
+    const themeKey = (this.newProject.themeKey || DEFAULT_TEMPLATE_KEY) as TemplateKey;
     if (!title) {
       this.error = "Title is required.";
       return;
@@ -456,7 +468,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
           slug: data.project.slug,
           visibility: data.project.visibility,
           isPublished: data.project.isPublished,
-          themeKey: data.project.themeKey ?? themeKey,
+          themeKey: toTemplateKey(data.project.themeKey ?? themeKey),
         };
         this.newProject = { title: "", themeKey };
       }
@@ -489,7 +501,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
           slug: data.project.slug,
           visibility: data.project.visibility,
           isPublished: data.project.isPublished,
-          themeKey: data.project.themeKey ?? TEMPLATE_OPTIONS[0].key,
+          themeKey: (data.project.themeKey ?? DEFAULT_TEMPLATE_KEY) as TemplateKey,
         };
       }
     } catch (err: any) {
@@ -528,7 +540,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
           slug: data.project.slug,
           visibility: data.project.visibility,
           isPublished: data.project.isPublished,
-          themeKey: data.project.themeKey ?? this.projectMeta.themeKey,
+          themeKey: toTemplateKey(data.project.themeKey ?? this.projectMeta.themeKey),
         };
       }
       this.success = "Portfolio updated.";
