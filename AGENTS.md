@@ -16,6 +16,7 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## 2. Portfolio Creator V1 (In progress)
 
+- 2026-02-01 Removed "Use this layout" buttons from landing page layout cards (V1 simplification).
 - 2026-02-01 Added Pro gating for templates 3/4 (UI disabled + Pro badge + pricing CTA) and server-side PAYMENT_REQUIRED guards across portfolio actions (create/edit/preview/publish/mutate). Delete remains allowed for free users. Template keys normalized to classic/gallery/minimal/story.
 - 2026-01-31 Normalized payment fields in `Astro.locals.user` to avoid undefined values (stripeCustomerId/plan/planStatus/isPaid/renewalAt).
 - 2026-01-31 Added locals.session payment flags in middleware/types and a temporary `/admin/session` debug page for Phase 2 verification.
