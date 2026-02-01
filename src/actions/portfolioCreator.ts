@@ -20,6 +20,8 @@ import {
   normalizePortfolioSection,
   normalizeText,
   sectionLabels,
+  TEMPLATE_KEYS,
+  isProTemplate,
 } from "../modules/portfolio-creator/helpers";
 import { buildPortfolioDashboardSummary } from "../dashboard/summary.schema";
 import { pushPortfolioCreatorActivity } from "../lib/pushActivity";
@@ -28,6 +30,7 @@ import type { PortfolioSectionKey, PortfolioVisibility } from "../modules/portfo
 
 const projectSchema = z.object({
   title: z.string().min(1, "Title is required"),
+  themeKey: z.enum(TEMPLATE_KEYS),
 });
 
 const projectIdSchema = z.object({
@@ -40,7 +43,7 @@ const updateProjectSchema = z
     title: z.string().min(1).optional(),
     slug: z.string().min(1).optional(),
     visibility: z.enum(["public", "unlisted", "private"]).optional(),
-    themeKey: z.string().min(1).optional(),
+    themeKey: z.enum(TEMPLATE_KEYS).optional(),
   })
   .refine((input) => Object.keys(input).some((key) => key !== "projectId"), {
     message: "Provide at least one field to update.",
@@ -119,6 +122,15 @@ const ensureUniqueSlug = async (baseSlug: string, projectId?: string) => {
   }
 };
 
+const ensureTemplateAccess = (templateKey: string, isPaid: boolean) => {
+  if (isProTemplate(templateKey) && !isPaid) {
+    throw new ActionError({
+      code: "PAYMENT_REQUIRED",
+      message: "Upgrade to Pro to use this template.",
+    });
+  }
+};
+
 const getOwnedProject = async (projectId: string, userId: string) => {
   const [project] = await db
     .select()
@@ -132,7 +144,17 @@ const getOwnedProject = async (projectId: string, userId: string) => {
   return project;
 };
 
-const getOwnedSection = async (sectionId: string, userId: string) => {
+const getOwnedProjectWithTemplateAccess = async (
+  projectId: string,
+  userId: string,
+  isPaid: boolean,
+) => {
+  const project = await getOwnedProject(projectId, userId);
+  ensureTemplateAccess(project.themeKey, isPaid);
+  return project;
+};
+
+const getOwnedSection = async (sectionId: string, userId: string, isPaid: boolean) => {
   const [section] = await db
     .select()
     .from(PortfolioSection)
@@ -142,11 +164,11 @@ const getOwnedSection = async (sectionId: string, userId: string) => {
     throw new ActionError({ code: "NOT_FOUND", message: "Portfolio section not found." });
   }
 
-  await getOwnedProject(section.projectId, userId);
+  await getOwnedProjectWithTemplateAccess(section.projectId, userId, isPaid);
   return section;
 };
 
-const getOwnedItem = async (itemId: string, userId: string) => {
+const getOwnedItem = async (itemId: string, userId: string, isPaid: boolean) => {
   const [item] = await db
     .select()
     .from(PortfolioItem)
@@ -165,7 +187,7 @@ const getOwnedItem = async (itemId: string, userId: string) => {
     throw new ActionError({ code: "NOT_FOUND", message: "Portfolio item not found." });
   }
 
-  await getOwnedProject(section.projectId, userId);
+  await getOwnedProjectWithTemplateAccess(section.projectId, userId, isPaid);
   return { item, section };
 };
 
@@ -244,6 +266,7 @@ export const createProject = defineAction({
   input: projectSchema,
   async handler(input, context: ActionAPIContext) {
     const user = requireUser(context);
+    ensureTemplateAccess(input.themeKey, user.isPaid);
     const title = normalizeText(input.title);
     if (!title) {
       throw new ActionError({ code: "BAD_REQUEST", message: "Title is required." });
@@ -263,7 +286,7 @@ export const createProject = defineAction({
         visibility: "private" satisfies PortfolioVisibility,
         isPublished: false,
         publishedAt: null,
-        themeKey: "classic",
+        themeKey: input.themeKey,
         createdAt: now,
         updatedAt: now,
       })
@@ -346,7 +369,7 @@ export const getProject = defineAction({
   input: projectIdSchema,
   async handler({ projectId }, context: ActionAPIContext) {
     const user = requireUser(context);
-    const project = await getOwnedProject(projectId, user.id);
+    const project = await getOwnedProjectWithTemplateAccess(projectId, user.id, user.isPaid);
 
     const sections = await db
       .select()
@@ -388,7 +411,7 @@ export const updateProject = defineAction({
   input: updateProjectSchema,
   async handler({ projectId, title, slug, visibility, themeKey }, context: ActionAPIContext) {
     const user = requireUser(context);
-    const project = await getOwnedProject(projectId, user.id);
+    const project = await getOwnedProjectWithTemplateAccess(projectId, user.id, user.isPaid);
 
     const updates: Record<string, any> = { updatedAt: new Date() };
     let visibilityChanged = false;
@@ -415,6 +438,7 @@ export const updateProject = defineAction({
     }
 
     if (themeKey !== undefined) {
+      ensureTemplateAccess(themeKey, user.isPaid);
       updates.themeKey = themeKey;
     }
 
@@ -473,7 +497,7 @@ export const setPublish = defineAction({
   input: publishSchema,
   async handler({ projectId, isPublished }, context: ActionAPIContext) {
     const user = requireUser(context);
-    await getOwnedProject(projectId, user.id);
+    await getOwnedProjectWithTemplateAccess(projectId, user.id, user.isPaid);
 
     const now = new Date();
     const [project] = await db
@@ -510,7 +534,7 @@ export const toggleSection = defineAction({
   input: sectionToggleSchema,
   async handler({ sectionId, isEnabled }, context: ActionAPIContext) {
     const user = requireUser(context);
-    const section = await getOwnedSection(sectionId, user.id);
+    const section = await getOwnedSection(sectionId, user.id, user.isPaid);
 
     const [updated] = await db
       .update(PortfolioSection)
@@ -529,7 +553,7 @@ export const reorderSections = defineAction({
   input: reorderSectionsSchema,
   async handler({ projectId, orderedSectionIds }, context: ActionAPIContext) {
     const user = requireUser(context);
-    await getOwnedProject(projectId, user.id);
+    await getOwnedProjectWithTemplateAccess(projectId, user.id, user.isPaid);
 
     const existing = await db
       .select({ id: PortfolioSection.id })
@@ -560,7 +584,7 @@ export const createItem = defineAction({
   input: createItemSchema,
   async handler({ sectionId, data }, context: ActionAPIContext) {
     const user = requireUser(context);
-    const section = await getOwnedSection(sectionId, user.id);
+    const section = await getOwnedSection(sectionId, user.id, user.isPaid);
 
     const now = new Date();
     const [{ value: itemCountRaw } = { value: 0 }] = await db
@@ -592,7 +616,7 @@ export const updateItem = defineAction({
   input: updateItemSchema,
   async handler({ itemId, data }, context: ActionAPIContext) {
     const user = requireUser(context);
-    const { section } = await getOwnedItem(itemId, user.id);
+    const { section } = await getOwnedItem(itemId, user.id, user.isPaid);
 
     const [updated] = await db
       .update(PortfolioItem)
@@ -611,7 +635,7 @@ export const deleteItem = defineAction({
   input: deleteItemSchema,
   async handler({ itemId }, context: ActionAPIContext) {
     const user = requireUser(context);
-    const { section } = await getOwnedItem(itemId, user.id);
+    const { section } = await getOwnedItem(itemId, user.id, user.isPaid);
 
     await db.delete(PortfolioItem).where(eq(PortfolioItem.id, itemId));
     await touchProject(section.projectId);
@@ -625,7 +649,7 @@ export const reorderItems = defineAction({
   input: reorderItemsSchema,
   async handler({ sectionId, orderedItemIds }, context: ActionAPIContext) {
     const user = requireUser(context);
-    const section = await getOwnedSection(sectionId, user.id);
+    const section = await getOwnedSection(sectionId, user.id, user.isPaid);
 
     const existing = await db
       .select({ id: PortfolioItem.id })

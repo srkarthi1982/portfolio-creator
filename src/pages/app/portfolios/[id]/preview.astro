@@ -1,6 +1,7 @@
 ---
 import "@ansiversa/components/styles/global.css";
 import "../../../../styles/global.css";
+import { AvButton, AvContainer } from "@ansiversa/components";
 import { actions } from "astro:actions";
 import PortfolioPreview from "../../../../components/PortfolioPreview.astro";
 import { buildPortfolioDataFromSections } from "../../../../modules/portfolio-creator/helpers";
@@ -9,6 +10,7 @@ import type { PortfolioProjectDetail } from "../../../../modules/portfolio-creat
 const projectId = Astro.params.id ?? "";
 let projectData: PortfolioProjectDetail | null = null;
 let loadError: string | null = null;
+let isPaywall = false;
 
 try {
   const result = await Astro.callAction(actions.portfolioCreator.getProject, { projectId });
@@ -16,6 +18,7 @@ try {
   projectData = data as PortfolioProjectDetail;
 } catch (err) {
   loadError = (err as Error)?.message ?? "Unable to load portfolio.";
+  isPaywall = loadError.toLowerCase().includes("upgrade to pro");
 }
 
 const portfolioData = projectData ? buildPortfolioDataFromSections(projectData.sections ?? []) : null;
@@ -32,7 +35,16 @@ const pageTitle = projectData?.project?.title
   </head>
   <body>
     {loadError ? (
-      <div class="av-alert av-alert-danger" role="status">{loadError}</div>
+      <AvContainer>
+        <div class="av-alert av-alert-danger" role="status">{loadError}</div>
+        {isPaywall ? (
+          <div style="margin-top: 1rem;">
+            <AvButton href="https://ansiversa.com/pricing" variant="primary">
+              View pricing
+            </AvButton>
+          </div>
+        ) : null}
+      </AvContainer>
     ) : portfolioData ? (
       <PortfolioPreview data={portfolioData} />
     ) : null}

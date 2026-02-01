@@ -8,9 +8,10 @@ import type {
   PortfolioSectionKey,
   PortfolioVisibility,
 } from "./types";
-import { sectionLabels } from "./helpers";
+import { TEMPLATE_KEYS, TEMPLATE_OPTIONS, isProTemplate, sectionLabels } from "./helpers";
 
 const SINGLE_SECTIONS: PortfolioSectionKey[] = ["profile", "about", "skills", "contact"];
+const PAYWALL_MESSAGE = "This template is available in Pro.";
 
 const defaultState = () => ({
   projects: [] as PortfolioProjectDTO[],
@@ -24,14 +25,19 @@ const defaultState = () => ({
   editingItemId: null as string | null,
   formData: {} as Record<string, any>,
   previewBuster: Date.now(),
+  isPaid: false,
+  paywallMessage: null as string | null,
+  templateOptions: TEMPLATE_OPTIONS,
   newProject: {
     title: "",
+    themeKey: TEMPLATE_OPTIONS[0].key,
   },
   projectMeta: {
     title: "",
     slug: "",
     visibility: "private" as PortfolioVisibility,
     isPublished: false,
+    themeKey: TEMPLATE_OPTIONS[0].key,
   },
   pendingDeleteId: null as string | null,
 });
@@ -297,12 +303,16 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
   editingItemId: string | null = null;
   formData: Record<string, any> = {};
   previewBuster = Date.now();
-  newProject = { title: "" };
+  isPaid = false;
+  paywallMessage: string | null = null;
+  templateOptions = TEMPLATE_OPTIONS;
+  newProject = { title: "", themeKey: TEMPLATE_OPTIONS[0].key };
   projectMeta = {
     title: "",
     slug: "",
     visibility: "private" as PortfolioVisibility,
     isPublished: false,
+    themeKey: TEMPLATE_OPTIONS[0].key,
   };
   pendingDeleteId: string | null = null;
 
@@ -311,7 +321,11 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
     this.projects = (initial.projects ?? []) as PortfolioProjectDTO[];
     this.activeProject = (initial.activeProject ?? null) as PortfolioProjectDetail | null;
     this.activeProjectId = initial.activeProjectId ?? this.activeProject?.project?.id ?? null;
-    this.newProject = { title: initial.newProject?.title ?? "" };
+    this.newProject = {
+      title: initial.newProject?.title ?? "",
+      themeKey: (initial.newProject?.themeKey ?? TEMPLATE_OPTIONS[0].key) as string,
+    };
+    this.isPaid = Boolean(initial.isPaid);
 
     if (this.activeProject?.project) {
       this.projectMeta = {
@@ -319,6 +333,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
         slug: this.activeProject.project.slug,
         visibility: this.activeProject.project.visibility,
         isPublished: this.activeProject.project.isPublished,
+        themeKey: this.activeProject.project.themeKey ?? TEMPLATE_OPTIONS[0].key,
       };
     }
   }
@@ -347,6 +362,28 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
     if (this.activeSectionKey === "certifications") return data?.title ?? "Certification";
     if (this.activeSectionKey === "achievements") return data?.title ?? "Achievement";
     return "Item";
+  }
+
+  isTemplateLocked(templateKey: string) {
+    return isProTemplate(templateKey) && !this.isPaid;
+  }
+
+  selectNewTemplate(templateKey: string) {
+    if (this.isTemplateLocked(templateKey)) {
+      this.paywallMessage = PAYWALL_MESSAGE;
+      return;
+    }
+    this.paywallMessage = null;
+    this.newProject.themeKey = templateKey;
+  }
+
+  selectProjectTemplate(templateKey: string) {
+    if (this.isTemplateLocked(templateKey)) {
+      this.paywallMessage = PAYWALL_MESSAGE;
+      return;
+    }
+    this.paywallMessage = null;
+    this.projectMeta.themeKey = templateKey;
   }
 
   private bumpPreview() {
@@ -388,17 +425,27 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
 
   async createProject() {
     const title = normalizeText(this.newProject.title);
+    const themeKey = (this.newProject.themeKey || TEMPLATE_OPTIONS[0].key) as string;
     if (!title) {
       this.error = "Title is required.";
+      return;
+    }
+    if (!TEMPLATE_KEYS.includes(themeKey as any)) {
+      this.error = "Select a valid template.";
       return;
     }
 
     this.loading = true;
     this.error = null;
     this.success = null;
+    this.paywallMessage = null;
 
     try {
-      const res = await actions.portfolioCreator.createProject({ title });
+      const res = await actions.portfolioCreator.createProject({ title, themeKey: themeKey as any });
+      if (res?.error?.code === "PAYMENT_REQUIRED") {
+        this.paywallMessage = res.error.message || PAYWALL_MESSAGE;
+        return;
+      }
       const data = this.unwrapResult(res) as PortfolioProjectDetail;
       if (data?.project) {
         this.projects = [data.project, ...this.projects];
@@ -409,8 +456,9 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
           slug: data.project.slug,
           visibility: data.project.visibility,
           isPublished: data.project.isPublished,
+          themeKey: data.project.themeKey ?? themeKey,
         };
-        this.newProject.title = "";
+        this.newProject = { title: "", themeKey };
       }
       this.success = "Portfolio created.";
       this.bumpPreview();
@@ -424,9 +472,14 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
   async loadProject(id: string) {
     this.loading = true;
     this.error = null;
+    this.paywallMessage = null;
 
     try {
       const res = await actions.portfolioCreator.getProject({ projectId: id });
+      if (res?.error?.code === "PAYMENT_REQUIRED") {
+        this.paywallMessage = res.error.message || PAYWALL_MESSAGE;
+        return;
+      }
       const data = this.unwrapResult(res) as PortfolioProjectDetail;
       this.activeProject = data;
       this.activeProjectId = data.project?.id ?? id;
@@ -436,6 +489,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
           slug: data.project.slug,
           visibility: data.project.visibility,
           isPublished: data.project.isPublished,
+          themeKey: data.project.themeKey ?? TEMPLATE_OPTIONS[0].key,
         };
       }
     } catch (err: any) {
@@ -451,6 +505,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
     this.loading = true;
     this.error = null;
     this.success = null;
+    this.paywallMessage = null;
 
     try {
       const res = await actions.portfolioCreator.updateProject({
@@ -458,7 +513,12 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
         title: this.projectMeta.title,
         slug: this.projectMeta.slug,
         visibility: this.projectMeta.visibility,
+        themeKey: this.projectMeta.themeKey,
       });
+      if (res?.error?.code === "PAYMENT_REQUIRED") {
+        this.paywallMessage = res.error.message || PAYWALL_MESSAGE;
+        return;
+      }
       const data = this.unwrapResult(res) as { project: PortfolioProjectDTO };
       if (data?.project) {
         this.activeProject.project = data.project;
@@ -468,6 +528,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
           slug: data.project.slug,
           visibility: data.project.visibility,
           isPublished: data.project.isPublished,
+          themeKey: data.project.themeKey ?? this.projectMeta.themeKey,
         };
       }
       this.success = "Portfolio updated.";
@@ -485,12 +546,17 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
 
     this.loading = true;
     this.error = null;
+    this.paywallMessage = null;
 
     try {
       const res = await actions.portfolioCreator.setPublish({
         projectId: this.activeProject.project.id,
         isPublished: next,
       });
+      if (res?.error?.code === "PAYMENT_REQUIRED") {
+        this.paywallMessage = res.error.message || PAYWALL_MESSAGE;
+        return;
+      }
       const data = this.unwrapResult(res) as { project: PortfolioProjectDTO };
       if (data?.project) {
         this.activeProject.project = data.project;
@@ -552,9 +618,14 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
 
     this.loading = true;
     this.error = null;
+    this.paywallMessage = null;
 
     try {
       const res = await actions.portfolioCreator.toggleSection({ sectionId, isEnabled: value });
+      if (res?.error?.code === "PAYMENT_REQUIRED") {
+        this.paywallMessage = res.error.message || PAYWALL_MESSAGE;
+        return;
+      }
       const data = this.unwrapResult(res) as { section: any };
       if (data?.section) {
         this.activeProject.sections = this.activeProject.sections.map((entry) =>
@@ -580,6 +651,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
       this.loading = true;
       this.error = null;
       this.success = null;
+      this.paywallMessage = null;
 
       if (isSingleSection(this.activeSectionKey)) {
         const existing = section.items[0];
@@ -588,6 +660,10 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
             itemId: existing.id,
             data: payload,
           });
+          if (res?.error?.code === "PAYMENT_REQUIRED") {
+            this.paywallMessage = res.error.message || PAYWALL_MESSAGE;
+            return;
+          }
           const data = this.unwrapResult(res) as { item: PortfolioItemDTO };
           if (data?.item) {
             section.items = [data.item];
@@ -597,6 +673,10 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
             sectionId: section.id,
             data: payload,
           });
+          if (res?.error?.code === "PAYMENT_REQUIRED") {
+            this.paywallMessage = res.error.message || PAYWALL_MESSAGE;
+            return;
+          }
           const data = this.unwrapResult(res) as { item: PortfolioItemDTO };
           if (data?.item) {
             section.items = [data.item];
@@ -608,6 +688,10 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
             itemId: this.editingItemId,
             data: payload,
           });
+          if (res?.error?.code === "PAYMENT_REQUIRED") {
+            this.paywallMessage = res.error.message || PAYWALL_MESSAGE;
+            return;
+          }
           const data = this.unwrapResult(res) as { item: PortfolioItemDTO };
           if (data?.item) {
             section.items = section.items.map((item) => (item.id === data.item.id ? data.item : item));
@@ -617,6 +701,10 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
             sectionId: section.id,
             data: payload,
           });
+          if (res?.error?.code === "PAYMENT_REQUIRED") {
+            this.paywallMessage = res.error.message || PAYWALL_MESSAGE;
+            return;
+          }
           const data = this.unwrapResult(res) as { item: PortfolioItemDTO };
           if (data?.item) {
             section.items = [...section.items, data.item];
@@ -640,8 +728,13 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
     try {
       this.loading = true;
       this.error = null;
+      this.paywallMessage = null;
 
-      await actions.portfolioCreator.deleteItem({ itemId });
+      const res = await actions.portfolioCreator.deleteItem({ itemId });
+      if (res?.error?.code === "PAYMENT_REQUIRED") {
+        this.paywallMessage = res.error.message || PAYWALL_MESSAGE;
+        return;
+      }
       this.activeSection.items = this.activeSection.items.filter((item) => item.id !== itemId);
       this.bumpPreview();
     } catch (err: any) {

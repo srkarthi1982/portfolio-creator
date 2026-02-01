@@ -1,6 +1,25 @@
 import type { PortfolioItemDTO, PortfolioProjectDTO, PortfolioSectionDTO } from "./types";
 import type { PortfolioSectionKey } from "./types";
 
+export const TEMPLATE_KEYS = ["classic", "gallery", "minimal", "story"] as const;
+
+export const TEMPLATE_OPTIONS = [
+  { key: "classic", label: "Case Study", tier: "free" },
+  { key: "gallery", label: "Gallery", tier: "free" },
+  { key: "minimal", label: "Minimal", tier: "pro" },
+  { key: "story", label: "Story", tier: "pro" },
+] as const;
+
+const TEMPLATE_TIER_MAP = {
+  classic: "free",
+  gallery: "free",
+  minimal: "pro",
+  story: "pro",
+} as const;
+
+export const isProTemplate = (templateKey: string) =>
+  TEMPLATE_TIER_MAP[templateKey as keyof typeof TEMPLATE_TIER_MAP] === "pro";
+
 export type PortfolioProjectRow = {
   id: string;
   userId: string;

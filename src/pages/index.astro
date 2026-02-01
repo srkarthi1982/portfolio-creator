@@ -9,7 +9,7 @@ const layouts = [
   {
     name: "Case Study",
     description: "Problem, process, and impact with structured storytelling.",
-    layout: "case-study",
+    layout: "classic",
   },
   {
     name: "Gallery",
@@ -125,7 +125,7 @@ const portfolioTimelineItems = [
             <div class="av-auth-stack-sm">
               <h3 class="av-card-heading">{layout.name}</h3>
               <div class="pc-layout-wireframe" aria-hidden="true">
-                {layout.layout === "case-study" && (
+                {layout.layout === "classic" && (
                   <svg viewBox="0 0 240 140" role="presentation">
                     <rect x="16" y="16" width="140" height="12" rx="6" />
                     <rect x="16" y="34" width="88" height="8" rx="4" />

@@ -9,10 +9,12 @@ import {
 } from "@ansiversa/components";
 import { actions } from "astro:actions";
 import AppShell from "../../../layouts/AppShell.astro";
+import { TEMPLATE_OPTIONS } from "../../../modules/portfolio-creator/helpers";
 import type { PortfolioProjectDTO } from "../../../modules/portfolio-creator/types";
 
 const title = "Your Portfolios – Portfolio Creator";
 const description = "Create and manage your portfolios.";
+const isPaid = Astro.locals.user?.isPaid === true;
 
 const listResult = await Astro.callAction(actions.portfolioCreator.listProjects, {});
 const data = (listResult as any)?.data ?? (listResult as any) ?? {};
@@ -20,8 +22,11 @@ const projects = (data?.items ?? []) as PortfolioProjectDTO[];
 
 const initialState = {
   projects,
+  isPaid,
+  paywallMessage: null,
   newProject: {
     title: "",
+    themeKey: TEMPLATE_OPTIONS[0].key,
   },
   pendingDeleteId: null,
 };
@@ -52,6 +57,29 @@ const initialState = {
                 x-model="newProject.title"
                 required
               />
+              <div class="pc-template-picker">
+                <template x-for="template in templateOptions" :key="template.key">
+                  <button
+                    class="pc-template-option"
+                    :class="newProject.themeKey === template.key ? 'is-selected' : ''"
+                    type="button"
+                    @click.prevent="selectNewTemplate(template.key)"
+                    :disabled="isTemplateLocked(template.key)"
+                  >
+                    <div class="pc-template-option__head">
+                      <p class="pc-template-option__title" x-text="template.label"></p>
+                      <span class="av-badge av-badge-soft" x-show="template.tier === 'pro' && !isPaid" x-cloak>Pro</span>
+                    </div>
+                    <p class="pc-template-option__meta" x-text="template.tier === 'pro' ? 'Included in Pro' : 'Free access'"></p>
+                  </button>
+                </template>
+              </div>
+              <div class="pc-paywall" x-show="paywallMessage" x-cloak>
+                <p class="av-text-soft av-m-0" x-text="paywallMessage"></p>
+                <AvButton href="https://ansiversa.com/pricing" variant="ghost" size="sm">
+                  View pricing
+                </AvButton>
+              </div>
               <div class="av-row-wrap">
                 <AvButton type="submit" :disabled="loading">Create portfolio</AvButton>
               </div>
@@ -147,4 +175,67 @@ const initialState = {
       </div>
     </AvContainer>
   </section>
+
+  <style>
+    .pc-template-picker {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .pc-template-option {
+      text-align: left;
+      padding: 0.85rem 1rem;
+      border-radius: 0.85rem;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: #0b1220;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      transition: border 0.2s ease, transform 0.2s ease;
+    }
+
+    .pc-template-option__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .pc-template-option__title {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .pc-template-option__meta {
+      font-size: 0.75rem;
+      color: rgba(148, 163, 184, 0.85);
+      margin: 0;
+    }
+
+    .pc-template-option:hover {
+      border-color: rgba(14, 165, 233, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .pc-template-option.is-selected {
+      border-color: rgba(14, 165, 233, 0.9);
+      background: rgba(14, 116, 144, 0.2);
+    }
+
+    .pc-template-option:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .pc-paywall {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+  </style>
 </AppShell>
