@@ -122,11 +122,11 @@ const monthOptions = PORTFOLIO_MONTH_OPTIONS;
                       <option value="private">Private</option>
                     </AvSelect>
                   </div>
-                  <div class="av-grid-auto av-grid-auto--260">
+                  <div class="av-portfolio-template-grid">
                     <template x-for="template in templateOptions" :key="template.key">
                       <button
-                        class="av-card av-auth-stack-xs text-left border border-slate-700 bg-slate-950/60"
-                        :class="projectMeta.themeKey === template.key ? 'border-cyan-400/80 ring-1 ring-cyan-400/30' : ''"
+                        class="av-portfolio-template-card"
+                        :class="projectMeta.themeKey === template.key ? 'is-selected' : ''"
                         type="button"
                         @click.prevent="selectProjectTemplate(template.key)"
                         :disabled="isTemplateLocked(template.key)"
@@ -343,7 +343,7 @@ const monthOptions = PORTFOLIO_MONTH_OPTIONS;
                       <AvInput label="Project link" type="url" name="project-link" x-model="formData.link" maxlength={PORTFOLIO_MAX.projectLink} @input={`enforceLimit('link', ${PORTFOLIO_MAX.projectLink})`} />
                       <AvTextarea label="Description" name="project-description" rows={3} x-model="formData.description" maxlength={PORTFOLIO_MAX.projectDescription} @input={`enforceLimit('description', ${PORTFOLIO_MAX.projectDescription})`} />
                       <p class="av-form-hint" x-text="`${(formData.description || '').length} / ${PORTFOLIO_MAX.projectDescription}`"></p>
-                      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      <div class="av-portfolio-date-grid">
                         <AvSelect label="Start year" name="project-start-year" x-model="formData.startYear">
                           <option value="">Select year</option>
                           {yearOptions.map((year) => <option value={year}>{year}</option>)}
@@ -396,7 +396,7 @@ const monthOptions = PORTFOLIO_MONTH_OPTIONS;
                         <AvInput label="Role" name="role" x-model="formData.role" maxlength={PORTFOLIO_MAX.experienceRole} @input={`enforceLimit('role', ${PORTFOLIO_MAX.experienceRole})`} />
                         <AvInput label="Company" name="company" x-model="formData.company" maxlength={PORTFOLIO_MAX.experienceCompany} @input={`enforceLimit('company', ${PORTFOLIO_MAX.experienceCompany})`} />
                       </div>
-                      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      <div class="av-portfolio-date-grid">
                         <AvSelect label="Start year" name="experience-start-year" x-model="formData.startYear">
                           <option value="">Select year</option>
                           {yearOptions.map((year) => <option value={year}>{year}</option>)}
@@ -450,7 +450,7 @@ const monthOptions = PORTFOLIO_MONTH_OPTIONS;
                         <AvInput label="Field" name="field" x-model="formData.field" maxlength={PORTFOLIO_MAX.educationField} @input={`enforceLimit('field', ${PORTFOLIO_MAX.educationField})`} />
                       </div>
                       <AvInput label="Institution" name="institution" x-model="formData.institution" maxlength={PORTFOLIO_MAX.educationInstitution} @input={`enforceLimit('institution', ${PORTFOLIO_MAX.educationInstitution})`} />
-                      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      <div class="av-portfolio-date-grid">
                         <AvSelect label="Start year" name="education-start-year" x-model="formData.startYear">
                           <option value="">Select year</option>
                           {yearOptions.map((year) => <option value={year}>{year}</option>)}

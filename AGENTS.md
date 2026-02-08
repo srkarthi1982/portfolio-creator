@@ -16,6 +16,8 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## 2. Portfolio Creator V1 (In progress)
 
+- 2026-02-08 Final standards polish: removed remaining raw utility classes from `src/pages/app/portfolios/index.astro` and `src/pages/app/portfolios/[id].astro` by introducing `av-portfolio-*` classes in `src/styles/global.css` (`av-portfolio-template-grid`, `av-portfolio-template-card`, `av-portfolio-date-grid`).
+- 2026-02-08 Replaced inline style in `src/pages/app/portfolios/[id]/preview.astro` with `av-portfolio-preview-cta` class.
 - 2026-02-08 Enforced Ansiversa Standard B hardening pass: removed page-scoped `<style>` blocks from `src/pages/index.astro`, `src/pages/app/portfolios/index.astro`, and `src/pages/app/portfolios/[id].astro`; moved these pages to Av component/utility-driven structure only.
 - 2026-02-08 Added `src/modules/portfolio-creator/constraints.ts` as single source of truth for form limits and year/month options.
 - 2026-02-08 Hardened action validation in `src/actions/portfolioCreator.ts`: replaced permissive payload handling with section-key-aware sanitization/validation, added URL/email normalization, trimmed/deduped list fields, and chronology validation for structured dates.
@@ -50,6 +52,10 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## Verification Log
 
+- 2026-02-08 `rg -n -e 'class=\"[^\"]*(^| )(border|bg|text|grid|gap)(-|:)|class=\"[^\"]*(^| )(sm:|lg:)' src/pages/app/portfolios` (no matches for raw utility classes).
+- 2026-02-08 `rg -n 'style=\"' src/pages/app/portfolios` (no matches).
+- 2026-02-08 `npm run typecheck` (pass; 0 errors, 0 warnings, existing baseRepository hint remains).
+- 2026-02-08 `npm run build` (pass).
 - 2026-02-08 `npm run typecheck` (pass; 0 errors, 0 warnings, existing baseRepository hint remains).
 - 2026-02-08 `npm run build` (pass; astro build --remote complete).
 - 2026-02-08 `rg -n "<style" src/pages` (no matches).

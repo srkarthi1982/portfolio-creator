@@ -75,6 +75,38 @@
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
+.av-portfolio-date-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.av-portfolio-template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.av-portfolio-template-card {
+  display: grid;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.9rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--av-surface-soft, rgba(255, 255, 255, 0.05));
+}
+
+.av-portfolio-template-card.is-selected {
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35);
+}
+
+.av-portfolio-preview-cta {
+  margin-top: 1rem;
+}
+
 .av-portfolio-item-list {
   display: grid;
   gap: 12px;
