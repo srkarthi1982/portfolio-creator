@@ -16,6 +16,13 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## 2. Portfolio Creator V1 (In progress)
 
+- 2026-02-08 Enforced Ansiversa Standard B hardening pass: removed page-scoped `<style>` blocks from `src/pages/index.astro`, `src/pages/app/portfolios/index.astro`, and `src/pages/app/portfolios/[id].astro`; moved these pages to Av component/utility-driven structure only.
+- 2026-02-08 Added `src/modules/portfolio-creator/constraints.ts` as single source of truth for form limits and year/month options.
+- 2026-02-08 Hardened action validation in `src/actions/portfolioCreator.ts`: replaced permissive payload handling with section-key-aware sanitization/validation, added URL/email normalization, trimmed/deduped list fields, and chronology validation for structured dates.
+- 2026-02-08 Fixed create item ordering collision in `createItem` by switching from `count + 1` to `max(order) + 1`.
+- 2026-02-08 Removed admin debug route `src/pages/admin/session.astro` and simplified middleware protection to `/app/*` only.
+- 2026-02-08 Updated editor/store to structured date fields, client-side clamps, counters, present-toggle/date guards, and section constraints wiring.
+- 2026-02-08 Updated `src/modules/portfolio-creator/helpers.ts` to support structured date formatting with legacy fallback mapping.
 - 2026-02-01 Added `/help` page and wired Help link into the mini-app menu.
 - 2026-02-01 Verified Portfolio Creator Pro gating: UI disabled/pro badges correct, server guards return PAYMENT_REQUIRED, delete remains allowed; access control locked and aligned with Quiz + Resume Builder.
 - 2026-02-01 Removed "Use this layout" buttons from landing page layout cards (V1 simplification).
@@ -43,6 +50,22 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## Verification Log
 
+- 2026-02-08 `npm run typecheck` (pass; 0 errors, 0 warnings, existing baseRepository hint remains).
+- 2026-02-08 `npm run build` (pass; astro build --remote complete).
+- 2026-02-08 `rg -n "<style" src/pages` (no matches).
+- 2026-02-08 `rg -n "#[0-9a-fA-F]{3,8}" src/pages` (no matches).
+- 2026-02-08 `rg -n "isProtectedRoute|/admin" src/middleware.ts` confirms `/app`-only protected route and no `/admin` handling.
+- 2026-02-08 `rg -n "z\\.any\\(" src/actions/portfolioCreator.ts` (no matches).
+- 2026-02-08 `rg -n "items\\.reduce\\(.*Math\\.max" src/actions/portfolioCreator.ts` confirms `max(order)+1` create-item strategy.
+- 2026-02-08 Manual proof artifacts captured under `artifacts/standardB-verify-20260208/`:
+  - `proof1_short_field_counter.png` (short field clamp)
+  - `proof1_long_field_counter.png` (textarea clamp)
+  - `proof2_invalid_date_blocked.png` (save blocked when end < start)
+  - `proof3_present_toggle_on.png` and `proof3_present_toggle_off.png` (present toggle clear/disable and re-enable)
+  - `proof4_item_before_delete.png`, `proof4_item_after_delete.png`, `proof4_project_deleted.png` (free-user delete behavior)
+  - `proof5_pro_template_ui_locked.png` + `proof5_pro_template_direct_response.json` (UI lock + server PAYMENT_REQUIRED)
+  - `proof.json` (summary values and confirmations)
+- 2026-02-08 Pro template direct action verification: `POST /_actions/portfolioCreator.createProject/` as free user returned HTTP 402 with `code: PAYMENT_REQUIRED`.
 - 2026-02-01 `npm run typecheck` (pass; 1 hint in baseRepository).
 - 2026-02-01 `npm run build` (pass).
 - 2026-02-01 Pending manual check: free user sees templates 3/4 disabled + Pro badge; direct preview/publish returns PAYMENT_REQUIRED; delete allowed. Paid user can use all templates.

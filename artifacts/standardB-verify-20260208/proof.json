@@ -1,0 +1,52 @@
+{
+  "shortField": {
+    "inputName": "portfolio-title",
+    "typedLen": 300,
+    "storedLen": 60,
+    "counter": "60 / 60",
+    "maxLength": 60
+  },
+  "longField": {
+    "inputName": "about-text",
+    "typedLen": 1200,
+    "storedLen": 500,
+    "counter": "500 / 500",
+    "maxLength": 500
+  },
+  "invalidDate": {
+    "startYear": "2024",
+    "endYear": "2020",
+    "error": "End date must be after start date.",
+    "saveBlocked": true
+  },
+  "presentToggle": {
+    "on": {
+      "endYearDisabled": true,
+      "endMonthDisabled": true,
+      "endYearValue": "",
+      "endMonthValue": ""
+    },
+    "off": {
+      "endYearEnabled": true,
+      "endMonthEnabled": true
+    }
+  },
+  "freeDelete": {
+    "itemDelete": {
+      "beforeCount": 1,
+      "afterCount": 0
+    },
+    "projectDeleteSuccess": true
+  },
+  "proGating": {
+    "ui": {
+      "minimalDisabled": true,
+      "storyDisabled": true
+    },
+    "directAction": {
+      "status": 402,
+      "rawResponse": "{\"type\":\"AstroActionError\",\"code\":\"PAYMENT_REQUIRED\",\"status\":402,\"message\":\"Upgrade to Pro to use this template.\"}",
+      "containsPaymentRequired": true
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "status": 402,
+  "rawResponse": "{\"type\":\"AstroActionError\",\"code\":\"PAYMENT_REQUIRED\",\"status\":402,\"message\":\"Upgrade to Pro to use this template.\"}",
+  "containsPaymentRequired": true
+}

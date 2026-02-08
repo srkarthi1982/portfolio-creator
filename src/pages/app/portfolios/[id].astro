@@ -14,6 +14,12 @@ import { actions } from "astro:actions";
 import AppShell from "../../../layouts/AppShell.astro";
 import type { PortfolioProjectDetail } from "../../../modules/portfolio-creator/types";
 import { TEMPLATE_OPTIONS, sectionLabels } from "../../../modules/portfolio-creator/helpers";
+import {
+  PORTFOLIO_LIMITS,
+  PORTFOLIO_MAX,
+  PORTFOLIO_MONTH_OPTIONS,
+  getPortfolioYearOptions,
+} from "../../../modules/portfolio-creator/constraints";
 
 const projectId = Astro.params.id ?? "";
 const isPaid = Astro.locals.user?.isPaid === true;
@@ -55,6 +61,8 @@ const sectionOrder = [
   "achievements",
   "contact",
 ] as const;
+const yearOptions = getPortfolioYearOptions();
+const monthOptions = PORTFOLIO_MONTH_OPTIONS;
 ---
 
 <AppShell title={title} description={description}>
@@ -91,15 +99,19 @@ const sectionOrder = [
                       name="portfolio-title"
                       placeholder="Portfolio name"
                       x-model="projectMeta.title"
+                      maxlength={PORTFOLIO_MAX.projectTitle}
                       required
                     />
+                    <p class="av-form-hint" x-text="`${(projectMeta.title || '').length} / ${PORTFOLIO_MAX.projectTitle}`"></p>
                     <AvInput
                       label="Slug"
                       name="portfolio-slug"
                       placeholder="your-name"
                       x-model="projectMeta.slug"
+                      maxlength={PORTFOLIO_MAX.slug}
                       required
                     />
+                    <p class="av-form-hint" x-text="`${(projectMeta.slug || '').length} / ${PORTFOLIO_MAX.slug}`"></p>
                     <AvSelect
                       label="Visibility"
                       name="portfolio-visibility"
@@ -110,24 +122,24 @@ const sectionOrder = [
                       <option value="private">Private</option>
                     </AvSelect>
                   </div>
-                  <div class="pc-template-picker">
+                  <div class="av-grid-auto av-grid-auto--260">
                     <template x-for="template in templateOptions" :key="template.key">
                       <button
-                        class="pc-template-option"
-                        :class="projectMeta.themeKey === template.key ? 'is-selected' : ''"
+                        class="av-card av-auth-stack-xs text-left border border-slate-700 bg-slate-950/60"
+                        :class="projectMeta.themeKey === template.key ? 'border-cyan-400/80 ring-1 ring-cyan-400/30' : ''"
                         type="button"
                         @click.prevent="selectProjectTemplate(template.key)"
                         :disabled="isTemplateLocked(template.key)"
                       >
-                        <div class="pc-template-option__head">
-                          <p class="pc-template-option__title" x-text="template.label"></p>
+                        <div class="av-row-between">
+                          <p class="av-card-heading" x-text="template.label"></p>
                           <span class="av-badge av-badge-soft" x-show="template.tier === 'pro' && !isPaid" x-cloak>Pro</span>
                         </div>
-                        <p class="pc-template-option__meta" x-text="template.tier === 'pro' ? 'Included in Pro' : 'Free access'"></p>
+                        <p class="av-text-soft" x-text="template.tier === 'pro' ? 'Included in Pro' : 'Free access'"></p>
                       </button>
                     </template>
                   </div>
-                  <div class="pc-paywall" x-show="paywallMessage" x-cloak>
+                  <div class="av-row-wrap" x-show="paywallMessage" x-cloak>
                     <p class="av-text-soft av-m-0" x-text="paywallMessage"></p>
                     <AvButton href="https://ansiversa.com/pricing" variant="ghost" size="sm">
                       View pricing
@@ -216,17 +228,19 @@ const sectionOrder = [
 
                 <template x-if="activeSectionKey === 'profile'">
                   <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
-                    <AvInput label="Full name" name="full-name" x-model="formData.fullName" required />
-                    <AvInput label="Headline" name="headline" x-model="formData.headline" />
-                    <AvInput label="Location" name="location" x-model="formData.location" />
+                    <AvInput label="Full name" name="full-name" x-model="formData.fullName" maxlength={PORTFOLIO_MAX.profileFullName} @input={`enforceLimit('fullName', ${PORTFOLIO_MAX.profileFullName})`} required />
+                    <p class="av-form-hint" x-text="`${(formData.fullName || '').length} / ${PORTFOLIO_MAX.profileFullName}`"></p>
+                    <AvInput label="Headline" name="headline" x-model="formData.headline" maxlength={PORTFOLIO_MAX.profileHeadline} @input={`enforceLimit('headline', ${PORTFOLIO_MAX.profileHeadline})`} />
+                    <p class="av-form-hint" x-text="`${(formData.headline || '').length} / ${PORTFOLIO_MAX.profileHeadline}`"></p>
+                    <AvInput label="Location" name="location" x-model="formData.location" maxlength={PORTFOLIO_MAX.profileLocation} @input={`enforceLimit('location', ${PORTFOLIO_MAX.profileLocation})`} />
                     <div class="av-portfolio-form-grid">
-                      <AvInput label="Email" name="email" x-model="formData.email" />
-                      <AvInput label="Phone" name="phone" x-model="formData.phone" />
+                      <AvInput label="Email" type="email" name="email" x-model="formData.email" maxlength={PORTFOLIO_MAX.profileEmail} @input={`enforceLimit('email', ${PORTFOLIO_MAX.profileEmail})`} />
+                      <AvInput label="Phone" type="tel" name="phone" x-model="formData.phone" maxlength={PORTFOLIO_MAX.profilePhone} @input={`enforceLimit('phone', ${PORTFOLIO_MAX.profilePhone})`} />
                     </div>
-                    <AvInput label="Website" name="website" x-model="formData.website" />
+                    <AvInput label="Website" type="url" name="website" x-model="formData.website" maxlength={PORTFOLIO_MAX.profileWebsite} @input={`enforceLimit('website', ${PORTFOLIO_MAX.profileWebsite})`} />
                     <div class="av-portfolio-form-grid">
-                      <AvInput label="GitHub" name="github" x-model="formData.github" />
-                      <AvInput label="LinkedIn" name="linkedin" x-model="formData.linkedin" />
+                      <AvInput label="GitHub" type="url" name="github" x-model="formData.github" maxlength={PORTFOLIO_MAX.profileGithub} @input={`enforceLimit('github', ${PORTFOLIO_MAX.profileGithub})`} />
+                      <AvInput label="LinkedIn" type="url" name="linkedin" x-model="formData.linkedin" maxlength={PORTFOLIO_MAX.profileLinkedin} @input={`enforceLimit('linkedin', ${PORTFOLIO_MAX.profileLinkedin})`} />
                     </div>
                     <div class="av-row-wrap">
                       <AvButton type="submit" :disabled="loading">Save profile</AvButton>
@@ -241,7 +255,10 @@ const sectionOrder = [
                       name="about-text"
                       rows={6}
                       x-model="formData.text"
+                      maxlength={PORTFOLIO_MAX.aboutText}
+                      @input={`enforceLimit('text', ${PORTFOLIO_MAX.aboutText})`}
                     />
+                    <p class="av-form-hint" x-text="`${(formData.text || '').length} / ${PORTFOLIO_MAX.aboutText}`"></p>
                     <div class="av-row-wrap">
                       <AvButton type="submit" :disabled="loading">Save about</AvButton>
                     </div>
@@ -252,13 +269,15 @@ const sectionOrder = [
                   <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
                     <template x-for="(group, index) in formData.groups" :key="index">
                       <div class="av-auth-stack-xs">
-                        <AvInput label="Group name" name="group-name" x-model="group.name" />
+                        <AvInput label="Group name" name="group-name" x-model="group.name" maxlength={PORTFOLIO_MAX.skillsGroupName} @input={`enforceLimit('groups.' + index + '.name', ${PORTFOLIO_MAX.skillsGroupName})`} />
                         <AvTextarea
                           label="Items (one per line)"
                           name="group-items"
                           rows={3}
                           x-model="group.items"
+                          @input={`enforceLineLimit('groups.' + index + '.items', ${PORTFOLIO_MAX.skillItem}, 12)`}
                         />
+                        <p class="av-form-hint">Each skill max {PORTFOLIO_MAX.skillItem} characters.</p>
                       </div>
                     </template>
                     <div class="av-row-wrap">
@@ -273,22 +292,29 @@ const sectionOrder = [
                       label="Call to action title"
                       name="cta-title"
                       x-model="formData.callToActionTitle"
+                      maxlength={PORTFOLIO_MAX.ctaTitle}
+                      @input={`enforceLimit('callToActionTitle', ${PORTFOLIO_MAX.ctaTitle})`}
                     />
+                    <p class="av-form-hint" x-text="`${(formData.callToActionTitle || '').length} / ${PORTFOLIO_MAX.ctaTitle}`"></p>
                     <AvTextarea
                       label="Call to action text"
                       name="cta-text"
                       rows={4}
                       x-model="formData.callToActionText"
+                      maxlength={PORTFOLIO_MAX.ctaText}
+                      @input={`enforceLimit('callToActionText', ${PORTFOLIO_MAX.ctaText})`}
                     />
+                    <p class="av-form-hint" x-text="`${(formData.callToActionText || '').length} / ${PORTFOLIO_MAX.ctaText}`"></p>
                     <div class="av-portfolio-form-grid">
-                      <AvInput label="Email" name="contact-email" x-model="formData.email" />
-                      <AvInput label="Website" name="contact-website" x-model="formData.website" />
+                      <AvInput label="Email" type="email" name="contact-email" x-model="formData.email" maxlength={PORTFOLIO_MAX.profileEmail} @input={`enforceLimit('email', ${PORTFOLIO_MAX.profileEmail})`} />
+                      <AvInput label="Website" type="url" name="contact-website" x-model="formData.website" maxlength={PORTFOLIO_MAX.profileWebsite} @input={`enforceLimit('website', ${PORTFOLIO_MAX.profileWebsite})`} />
                     </div>
                     <AvTextarea
                       label="Links (one per line: Label | URL)"
                       name="contact-links"
                       rows={4}
                       x-model="formData.links"
+                      @input={`enforceLineLimit('links', ${PORTFOLIO_MAX.linkLabel + PORTFOLIO_MAX.linkUrl + 3}, 8)`}
                     />
                     <div class="av-row-wrap">
                       <AvButton type="submit" :disabled="loading">Save contact</AvButton>
@@ -313,11 +339,35 @@ const sectionOrder = [
                       </template>
                     </div>
                     <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
-                      <AvInput label="Project name" name="project-name" x-model="formData.name" />
-                      <AvInput label="Project link" name="project-link" x-model="formData.link" />
-                      <AvTextarea label="Description" name="project-description" rows={3} x-model="formData.description" />
-                      <AvTextarea label="Bullets (one per line)" name="project-bullets" rows={3} x-model="formData.bullets" />
-                      <AvInput label="Tags (comma separated)" name="project-tags" x-model="formData.tags" />
+                      <AvInput label="Project name" name="project-name" x-model="formData.name" maxlength={PORTFOLIO_MAX.projectName} @input={`enforceLimit('name', ${PORTFOLIO_MAX.projectName})`} />
+                      <AvInput label="Project link" type="url" name="project-link" x-model="formData.link" maxlength={PORTFOLIO_MAX.projectLink} @input={`enforceLimit('link', ${PORTFOLIO_MAX.projectLink})`} />
+                      <AvTextarea label="Description" name="project-description" rows={3} x-model="formData.description" maxlength={PORTFOLIO_MAX.projectDescription} @input={`enforceLimit('description', ${PORTFOLIO_MAX.projectDescription})`} />
+                      <p class="av-form-hint" x-text="`${(formData.description || '').length} / ${PORTFOLIO_MAX.projectDescription}`"></p>
+                      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        <AvSelect label="Start year" name="project-start-year" x-model="formData.startYear">
+                          <option value="">Select year</option>
+                          {yearOptions.map((year) => <option value={year}>{year}</option>)}
+                        </AvSelect>
+                        <AvSelect label="Start month" name="project-start-month" x-model="formData.startMonth">
+                          <option value="">Select month</option>
+                          {monthOptions.map((month) => <option value={month.value}>{month.label}</option>)}
+                        </AvSelect>
+                        <AvSelect label="End year" name="project-end-year" x-model="formData.endYear" :disabled="formData.isPresent">
+                          <option value="">Select year</option>
+                          {yearOptions.map((year) => <option value={year}>{year}</option>)}
+                        </AvSelect>
+                        <AvSelect label="End month" name="project-end-month" x-model="formData.endMonth" :disabled="formData.isPresent">
+                          <option value="">Select month</option>
+                          {monthOptions.map((month) => <option value={month.value}>{month.label}</option>)}
+                        </AvSelect>
+                      </div>
+                      <label class="av-inline-check av-text-soft">
+                        <input class="av-checkbox" type="checkbox" x-model="formData.isPresent" @change="togglePresent()" />
+                        <span>Present</span>
+                      </label>
+                      <AvTextarea label="Bullets (one per line)" name="project-bullets" rows={3} x-model="formData.bullets" @input={`enforceLineLimit('bullets', ${PORTFOLIO_MAX.bulletLine}, ${PORTFOLIO_LIMITS.projectBulletsMax})`} />
+                      <p class="av-form-hint">Max {PORTFOLIO_LIMITS.projectBulletsMax} bullets, {PORTFOLIO_MAX.bulletLine} chars each.</p>
+                      <AvInput label="Tags (comma separated)" name="project-tags" x-model="formData.tags" @input={`enforceTagsLimit('tags', ${PORTFOLIO_MAX.tag}, ${PORTFOLIO_LIMITS.projectTagsMax})`} />
                       <div class="av-row-wrap">
                         <AvButton type="submit" :disabled="loading" x-text="editingItemId ? 'Update project' : 'Add project'"></AvButton>
                       </div>
@@ -343,15 +393,34 @@ const sectionOrder = [
                     </div>
                     <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
                       <div class="av-portfolio-form-grid">
-                        <AvInput label="Role" name="role" x-model="formData.role" />
-                        <AvInput label="Company" name="company" x-model="formData.company" />
+                        <AvInput label="Role" name="role" x-model="formData.role" maxlength={PORTFOLIO_MAX.experienceRole} @input={`enforceLimit('role', ${PORTFOLIO_MAX.experienceRole})`} />
+                        <AvInput label="Company" name="company" x-model="formData.company" maxlength={PORTFOLIO_MAX.experienceCompany} @input={`enforceLimit('company', ${PORTFOLIO_MAX.experienceCompany})`} />
                       </div>
-                      <div class="av-portfolio-form-grid">
-                        <AvInput label="Start" name="start" x-model="formData.start" />
-                        <AvInput label="End" name="end" x-model="formData.end" />
+                      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        <AvSelect label="Start year" name="experience-start-year" x-model="formData.startYear">
+                          <option value="">Select year</option>
+                          {yearOptions.map((year) => <option value={year}>{year}</option>)}
+                        </AvSelect>
+                        <AvSelect label="Start month" name="experience-start-month" x-model="formData.startMonth">
+                          <option value="">Select month</option>
+                          {monthOptions.map((month) => <option value={month.value}>{month.label}</option>)}
+                        </AvSelect>
+                        <AvSelect label="End year" name="experience-end-year" x-model="formData.endYear" :disabled="formData.isPresent">
+                          <option value="">Select year</option>
+                          {yearOptions.map((year) => <option value={year}>{year}</option>)}
+                        </AvSelect>
+                        <AvSelect label="End month" name="experience-end-month" x-model="formData.endMonth" :disabled="formData.isPresent">
+                          <option value="">Select month</option>
+                          {monthOptions.map((month) => <option value={month.value}>{month.label}</option>)}
+                        </AvSelect>
                       </div>
-                      <AvInput label="Location" name="location" x-model="formData.location" />
-                      <AvTextarea label="Highlights (one per line)" name="bullets" rows={3} x-model="formData.bullets" />
+                      <label class="av-inline-check av-text-soft">
+                        <input class="av-checkbox" type="checkbox" x-model="formData.isPresent" @change="togglePresent()" />
+                        <span>Present</span>
+                      </label>
+                      <AvInput label="Location" name="location" x-model="formData.location" maxlength={PORTFOLIO_MAX.experienceLocation} @input={`enforceLimit('location', ${PORTFOLIO_MAX.experienceLocation})`} />
+                      <AvTextarea label="Highlights (one per line)" name="bullets" rows={3} x-model="formData.bullets" @input={`enforceLineLimit('bullets', ${PORTFOLIO_MAX.bulletLine}, ${PORTFOLIO_LIMITS.experienceBulletsMax})`} />
+                      <p class="av-form-hint">Max {PORTFOLIO_LIMITS.experienceBulletsMax} bullets, {PORTFOLIO_MAX.bulletLine} chars each.</p>
                       <div class="av-row-wrap">
                         <AvButton type="submit" :disabled="loading" x-text="editingItemId ? 'Update experience' : 'Add experience'"></AvButton>
                       </div>
@@ -377,15 +446,29 @@ const sectionOrder = [
                     </div>
                     <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
                       <div class="av-portfolio-form-grid">
-                        <AvInput label="Degree" name="degree" x-model="formData.degree" />
-                        <AvInput label="Field" name="field" x-model="formData.field" />
+                        <AvInput label="Degree" name="degree" x-model="formData.degree" maxlength={PORTFOLIO_MAX.educationDegree} @input={`enforceLimit('degree', ${PORTFOLIO_MAX.educationDegree})`} />
+                        <AvInput label="Field" name="field" x-model="formData.field" maxlength={PORTFOLIO_MAX.educationField} @input={`enforceLimit('field', ${PORTFOLIO_MAX.educationField})`} />
                       </div>
-                      <AvInput label="Institution" name="institution" x-model="formData.institution" />
-                      <div class="av-portfolio-form-grid">
-                        <AvInput label="Start" name="start" x-model="formData.start" />
-                        <AvInput label="End" name="end" x-model="formData.end" />
-                        <AvInput label="Grade" name="grade" x-model="formData.grade" />
+                      <AvInput label="Institution" name="institution" x-model="formData.institution" maxlength={PORTFOLIO_MAX.educationInstitution} @input={`enforceLimit('institution', ${PORTFOLIO_MAX.educationInstitution})`} />
+                      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        <AvSelect label="Start year" name="education-start-year" x-model="formData.startYear">
+                          <option value="">Select year</option>
+                          {yearOptions.map((year) => <option value={year}>{year}</option>)}
+                        </AvSelect>
+                        <AvSelect label="Start month" name="education-start-month" x-model="formData.startMonth">
+                          <option value="">Select month</option>
+                          {monthOptions.map((month) => <option value={month.value}>{month.label}</option>)}
+                        </AvSelect>
+                        <AvSelect label="End year" name="education-end-year" x-model="formData.endYear">
+                          <option value="">Select year</option>
+                          {yearOptions.map((year) => <option value={year}>{year}</option>)}
+                        </AvSelect>
+                        <AvSelect label="End month" name="education-end-month" x-model="formData.endMonth">
+                          <option value="">Select month</option>
+                          {monthOptions.map((month) => <option value={month.value}>{month.label}</option>)}
+                        </AvSelect>
                       </div>
+                      <AvInput label="Grade" name="grade" x-model="formData.grade" maxlength={PORTFOLIO_MAX.educationGrade} @input={`enforceLimit('grade', ${PORTFOLIO_MAX.educationGrade})`} />
                       <div class="av-row-wrap">
                         <AvButton type="submit" :disabled="loading" x-text="editingItemId ? 'Update education' : 'Add education'"></AvButton>
                       </div>
@@ -411,12 +494,15 @@ const sectionOrder = [
                     </div>
                     <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
                       <div class="av-portfolio-form-grid">
-                        <AvInput label="Title" name="title" x-model="formData.title" />
-                        <AvInput label="Issuer" name="issuer" x-model="formData.issuer" />
+                        <AvInput label="Title" name="title" x-model="formData.title" maxlength={PORTFOLIO_MAX.certificationTitle} @input={`enforceLimit('title', ${PORTFOLIO_MAX.certificationTitle})`} />
+                        <AvInput label="Issuer" name="issuer" x-model="formData.issuer" maxlength={PORTFOLIO_MAX.certificationIssuer} @input={`enforceLimit('issuer', ${PORTFOLIO_MAX.certificationIssuer})`} />
                       </div>
                       <div class="av-portfolio-form-grid">
-                        <AvInput label="Year" name="year" x-model="formData.year" />
-                        <AvInput label="Note" name="note" x-model="formData.note" />
+                        <AvSelect label="Year" name="year" x-model="formData.year">
+                          <option value="">Select year</option>
+                          {yearOptions.map((year) => <option value={year}>{year}</option>)}
+                        </AvSelect>
+                        <AvInput label="Note" name="note" x-model="formData.note" maxlength={PORTFOLIO_MAX.note} @input={`enforceLimit('note', ${PORTFOLIO_MAX.note})`} />
                       </div>
                       <div class="av-row-wrap">
                         <AvButton type="submit" :disabled="loading" x-text="editingItemId ? 'Update certification' : 'Add certification'"></AvButton>
@@ -443,12 +529,15 @@ const sectionOrder = [
                     </div>
                     <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
                       <div class="av-portfolio-form-grid">
-                        <AvInput label="Title" name="title" x-model="formData.title" />
-                        <AvInput label="Issuer" name="issuer" x-model="formData.issuer" />
+                        <AvInput label="Title" name="title" x-model="formData.title" maxlength={PORTFOLIO_MAX.certificationTitle} @input={`enforceLimit('title', ${PORTFOLIO_MAX.certificationTitle})`} />
+                        <AvInput label="Issuer" name="issuer" x-model="formData.issuer" maxlength={PORTFOLIO_MAX.certificationIssuer} @input={`enforceLimit('issuer', ${PORTFOLIO_MAX.certificationIssuer})`} />
                       </div>
                       <div class="av-portfolio-form-grid">
-                        <AvInput label="Year" name="year" x-model="formData.year" />
-                        <AvInput label="Note" name="note" x-model="formData.note" />
+                        <AvSelect label="Year" name="year" x-model="formData.year">
+                          <option value="">Select year</option>
+                          {yearOptions.map((year) => <option value={year}>{year}</option>)}
+                        </AvSelect>
+                        <AvInput label="Note" name="note" x-model="formData.note" maxlength={PORTFOLIO_MAX.note} @input={`enforceLimit('note', ${PORTFOLIO_MAX.note})`} />
                       </div>
                       <div class="av-row-wrap">
                         <AvButton type="submit" :disabled="loading" x-text="editingItemId ? 'Update achievement' : 'Add achievement'"></AvButton>
@@ -473,6 +562,9 @@ const sectionOrder = [
                 <template x-if="error">
                   <div class="av-alert av-alert-danger" role="status" x-text="error"></div>
                 </template>
+                <template x-if="warning">
+                  <div class="av-alert av-alert-warning" role="status" x-text="warning"></div>
+                </template>
                 <template x-if="success">
                   <div class="av-alert av-alert-success" role="status" x-text="success"></div>
                 </template>
@@ -484,66 +576,4 @@ const sectionOrder = [
     </AvContainer>
   </section>
 
-  <style>
-    .pc-template-picker {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 0.75rem;
-    }
-
-    .pc-template-option {
-      text-align: left;
-      padding: 0.85rem 1rem;
-      border-radius: 0.85rem;
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      background: #0b1220;
-      color: #e2e8f0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-      transition: border 0.2s ease, transform 0.2s ease;
-    }
-
-    .pc-template-option__head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-    }
-
-    .pc-template-option__title {
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-
-    .pc-template-option__meta {
-      font-size: 0.75rem;
-      color: rgba(148, 163, 184, 0.85);
-      margin: 0;
-    }
-
-    .pc-template-option:hover {
-      border-color: rgba(14, 165, 233, 0.6);
-      transform: translateY(-1px);
-    }
-
-    .pc-template-option.is-selected {
-      border-color: rgba(14, 165, 233, 0.9);
-      background: rgba(14, 116, 144, 0.2);
-    }
-
-    .pc-template-option:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .pc-paywall {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-top: 0.5rem;
-    }
-  </style>
 </AppShell>

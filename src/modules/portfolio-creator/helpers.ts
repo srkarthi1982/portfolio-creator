@@ -214,6 +214,29 @@ const getSectionItems = (sections: PortfolioSectionDTO[], key: PortfolioSectionK
 
 const normalizeArray = (value: any) => (Array.isArray(value) ? value.filter(Boolean).map(String) : []);
 
+const monthLabel = (value?: number) => {
+  if (!value || value < 1 || value > 12) return "";
+  return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][value - 1];
+};
+
+const formatRange = (
+  startYear?: number,
+  startMonth?: number,
+  endYear?: number,
+  endMonth?: number,
+  isPresent?: boolean,
+) => {
+  const start = startYear
+    ? [monthLabel(startMonth), String(startYear)].filter(Boolean).join(" ")
+    : "";
+  const end = isPresent
+    ? "Present"
+    : endYear
+      ? [monthLabel(endMonth), String(endYear)].filter(Boolean).join(" ")
+      : "";
+  return { start, end };
+};
+
 export const buildPortfolioDataFromSections = (sections: PortfolioSectionDTO[]): PortfolioData => {
   const base = createEmptyPortfolioData();
   const enabledSections = sections.filter((section) => section.isEnabled);
@@ -248,34 +271,65 @@ export const buildPortfolioDataFromSections = (sections: PortfolioSectionDTO[]):
   }));
 
   base.experience = getSectionItems(enabledSections, "experience").map((item) => ({
-    role: normalizeText(item.data?.role ?? ""),
-    company: normalizeText(item.data?.company ?? ""),
-    start: normalizeText(item.data?.start ?? ""),
-    end: normalizeText(item.data?.end ?? ""),
-    location: normalizeText(item.data?.location ?? ""),
-    bullets: normalizeArray(item.data?.bullets ?? []),
+    ...(() => {
+      const startYear = Number(item.data?.startYear);
+      const startMonth = Number(item.data?.startMonth);
+      const endYear = Number(item.data?.endYear);
+      const endMonth = Number(item.data?.endMonth);
+      const isPresent = Boolean(item.data?.isPresent ?? item.data?.present);
+      const range = formatRange(
+        Number.isFinite(startYear) ? startYear : undefined,
+        Number.isFinite(startMonth) ? startMonth : undefined,
+        Number.isFinite(endYear) ? endYear : undefined,
+        Number.isFinite(endMonth) ? endMonth : undefined,
+        isPresent,
+      );
+      return {
+        role: normalizeText(item.data?.role ?? ""),
+        company: normalizeText(item.data?.company ?? ""),
+        start: range.start || normalizeText(item.data?.start ?? ""),
+        end: range.end || normalizeText(item.data?.end ?? ""),
+        location: normalizeText(item.data?.location ?? ""),
+        bullets: normalizeArray(item.data?.bullets ?? []),
+      };
+    })(),
   }));
 
   base.education = getSectionItems(enabledSections, "education").map((item) => ({
-    degree: normalizeText(item.data?.degree ?? ""),
-    field: normalizeText(item.data?.field ?? ""),
-    institution: normalizeText(item.data?.institution ?? ""),
-    start: normalizeText(item.data?.start ?? ""),
-    end: normalizeText(item.data?.end ?? ""),
-    grade: normalizeText(item.data?.grade ?? ""),
+    ...(() => {
+      const startYear = Number(item.data?.startYear);
+      const startMonth = Number(item.data?.startMonth);
+      const endYear = Number(item.data?.endYear);
+      const endMonth = Number(item.data?.endMonth);
+      const range = formatRange(
+        Number.isFinite(startYear) ? startYear : undefined,
+        Number.isFinite(startMonth) ? startMonth : undefined,
+        Number.isFinite(endYear) ? endYear : undefined,
+        Number.isFinite(endMonth) ? endMonth : undefined,
+        false,
+      );
+      return {
+        degree: normalizeText(item.data?.degree ?? ""),
+        field: normalizeText(item.data?.field ?? ""),
+        institution: normalizeText(item.data?.institution ?? ""),
+        start: range.start || normalizeText(item.data?.start ?? ""),
+        end: range.end || normalizeText(item.data?.end ?? ""),
+        grade: normalizeText(item.data?.grade ?? ""),
+      };
+    })(),
   }));
 
   base.certifications = getSectionItems(enabledSections, "certifications").map((item) => ({
     title: normalizeText(item.data?.title ?? ""),
     issuer: normalizeText(item.data?.issuer ?? ""),
-    year: normalizeText(item.data?.year ?? ""),
+    year: String(item.data?.year ?? "").trim(),
     note: normalizeText(item.data?.note ?? ""),
   }));
 
   base.achievements = getSectionItems(enabledSections, "achievements").map((item) => ({
     title: normalizeText(item.data?.title ?? ""),
     issuer: normalizeText(item.data?.issuer ?? ""),
-    year: normalizeText(item.data?.year ?? ""),
+    year: String(item.data?.year ?? "").trim(),
     note: normalizeText(item.data?.note ?? ""),
   }));
 

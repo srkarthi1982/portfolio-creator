@@ -17,7 +17,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { cookies, locals, url } = context;
   const pathname = url.pathname;
 
-  const isProtectedRoute = pathname.startsWith("/app") || pathname.startsWith("/admin");
+  const isProtectedRoute = pathname.startsWith("/app");
 
   // Allow static assets
   if (
@@ -121,12 +121,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const loginUrl = new URL("/login", ROOT_APP_URL);
     loginUrl.searchParams.set("returnTo", url.toString()); // ✅ full URL back to app
     return context.redirect(loginUrl.toString());
-  }
-
-  if (pathname.startsWith("/admin")) {
-    if (locals.user?.roleId !== 1) {
-      return context.redirect("/");
-    }
   }
 
   return next();

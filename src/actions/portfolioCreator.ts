@@ -7,7 +7,6 @@ import {
   PortfolioSection,
   and,
   asc,
-  count,
   db,
   desc,
   eq,
@@ -27,6 +26,12 @@ import { buildPortfolioDashboardSummary } from "../dashboard/summary.schema";
 import { pushPortfolioCreatorActivity } from "../lib/pushActivity";
 import { notifyParent } from "../lib/notifyParent";
 import type { PortfolioSectionKey, PortfolioVisibility } from "../modules/portfolio-creator/types";
+import {
+  PORTFOLIO_LIMITS,
+  PORTFOLIO_MAX,
+  PORTFOLIO_YEAR_MIN,
+  getPortfolioYearMax,
+} from "../modules/portfolio-creator/constraints";
 
 const projectSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -66,12 +71,12 @@ const reorderSectionsSchema = z.object({
 
 const createItemSchema = z.object({
   sectionId: z.string().min(1),
-  data: z.any(),
+  data: z.unknown(),
 });
 
 const updateItemSchema = z.object({
   itemId: z.string().min(1),
-  data: z.any(),
+  data: z.unknown(),
 });
 
 const deleteItemSchema = z.object({
@@ -246,6 +251,253 @@ const defaultContact = () => ({
   links: [],
 });
 
+const cleanText = (value: unknown, max: number, label: string, required = false) => {
+  const cleaned = normalizeText(typeof value === "string" ? value : String(value ?? ""));
+  if (required && !cleaned) {
+    throw new ActionError({ code: "BAD_REQUEST", message: `${label} is required.` });
+  }
+  if (cleaned.length > max) {
+    throw new ActionError({
+      code: "BAD_REQUEST",
+      message: `${label} must be ${max} characters or fewer.`,
+    });
+  }
+  return cleaned;
+};
+
+const cleanEmail = (value: unknown, label: string) => {
+  const email = cleanText(value, PORTFOLIO_MAX.profileEmail, label);
+  if (!email) return "";
+  const parsed = z.string().email().safeParse(email);
+  if (!parsed.success) {
+    throw new ActionError({ code: "BAD_REQUEST", message: `${label} must be valid.` });
+  }
+  return email.toLowerCase();
+};
+
+const normalizeUrl = (value: unknown, label: string, max = PORTFOLIO_MAX.linkUrl) => {
+  const raw = cleanText(value, max, label);
+  if (!raw) return "";
+  const compact = raw.replace(/\s+/g, "");
+  const withProtocol = /^[a-z][a-z0-9+.-]*:\/\//i.test(compact) ? compact : `https://${compact}`;
+  let parsed: URL;
+  try {
+    parsed = new URL(withProtocol);
+  } catch {
+    throw new ActionError({ code: "BAD_REQUEST", message: `${label} must be a valid URL.` });
+  }
+  parsed.hostname = parsed.hostname.toLowerCase();
+  return parsed.toString();
+};
+
+const cleanLines = (
+  value: unknown,
+  maxLine: number,
+  maxItems: number,
+  label: string,
+) => {
+  const values = Array.isArray(value)
+    ? value.map((entry) => cleanText(entry, maxLine, label)).filter(Boolean)
+    : String(value ?? "")
+        .split("\n")
+        .map((entry) => cleanText(entry, maxLine, label))
+        .filter(Boolean);
+  return values.slice(0, maxItems);
+};
+
+const cleanTags = (value: unknown) => {
+  const tags = Array.isArray(value)
+    ? value.map((entry) => cleanText(entry, PORTFOLIO_MAX.tag, "Tag")).filter(Boolean)
+    : String(value ?? "")
+        .split(",")
+        .map((entry) => cleanText(entry, PORTFOLIO_MAX.tag, "Tag"))
+        .filter(Boolean);
+  const unique: string[] = [];
+  for (const tag of tags) {
+    if (!unique.includes(tag.toLowerCase())) {
+      unique.push(tag.toLowerCase());
+    }
+  }
+  return unique.slice(0, PORTFOLIO_LIMITS.projectTagsMax);
+};
+
+const parseYear = (value: unknown, label: string, required = false) => {
+  if (value === "" || value === null || value === undefined) {
+    if (required) {
+      throw new ActionError({ code: "BAD_REQUEST", message: `${label} is required.` });
+    }
+    return undefined;
+  }
+  const year = Number(value);
+  const max = getPortfolioYearMax();
+  if (!Number.isInteger(year) || year < PORTFOLIO_YEAR_MIN || year > max) {
+    throw new ActionError({
+      code: "BAD_REQUEST",
+      message: `${label} must be between ${PORTFOLIO_YEAR_MIN} and ${max}.`,
+    });
+  }
+  return year;
+};
+
+const parseMonth = (value: unknown, label: string) => {
+  if (value === "" || value === null || value === undefined) return undefined;
+  const month = Number(value);
+  if (!Number.isInteger(month) || month < 1 || month > 12) {
+    throw new ActionError({ code: "BAD_REQUEST", message: `${label} must be a valid month.` });
+  }
+  return month;
+};
+
+const validateChronology = (values: {
+  startYear?: number;
+  startMonth?: number;
+  endYear?: number;
+  endMonth?: number;
+  isPresent?: boolean;
+}) => {
+  const { startYear, startMonth, endYear, endMonth, isPresent } = values;
+  if (isPresent && !startYear) {
+    throw new ActionError({ code: "BAD_REQUEST", message: "Start year is required when Present is enabled." });
+  }
+  if (isPresent && (endYear || endMonth)) {
+    throw new ActionError({ code: "BAD_REQUEST", message: "End date must be empty when Present is enabled." });
+  }
+  if (startMonth && !startYear) {
+    throw new ActionError({ code: "BAD_REQUEST", message: "Start year is required when start month is set." });
+  }
+  if (endMonth && !endYear) {
+    throw new ActionError({ code: "BAD_REQUEST", message: "End year is required when end month is set." });
+  }
+  if ((endYear || endMonth) && !startYear) {
+    throw new ActionError({ code: "BAD_REQUEST", message: "Start year is required when end date is set." });
+  }
+  if (startYear && endYear) {
+    const startValue = startYear * 100 + (startMonth ?? 1);
+    const endValue = endYear * 100 + (endMonth ?? 12);
+    if (endValue < startValue) {
+      throw new ActionError({ code: "BAD_REQUEST", message: "End date must be after start date." });
+    }
+  }
+};
+
+const sanitizeSectionData = (key: PortfolioSectionKey, data: unknown) => {
+  const source = (data ?? {}) as Record<string, any>;
+
+  if (key === "profile") {
+    return {
+      fullName: cleanText(source.fullName, PORTFOLIO_MAX.profileFullName, "Full name", true),
+      headline: cleanText(source.headline, PORTFOLIO_MAX.profileHeadline, "Headline"),
+      location: cleanText(source.location, PORTFOLIO_MAX.profileLocation, "Location"),
+      email: cleanEmail(source.email, "Email"),
+      phone: cleanText(source.phone, PORTFOLIO_MAX.profilePhone, "Phone"),
+      website: normalizeUrl(source.website, "Website", PORTFOLIO_MAX.profileWebsite),
+      github: normalizeUrl(source.github, "GitHub", PORTFOLIO_MAX.profileGithub),
+      linkedin: normalizeUrl(source.linkedin, "LinkedIn", PORTFOLIO_MAX.profileLinkedin),
+    };
+  }
+
+  if (key === "about") {
+    return {
+      text: cleanText(source.text, PORTFOLIO_MAX.aboutText, "About"),
+    };
+  }
+
+  if (key === "featuredProjects") {
+    return {
+      name: cleanText(source.name, PORTFOLIO_MAX.projectName, "Project name", true),
+      description: cleanText(source.description, PORTFOLIO_MAX.projectDescription, "Project description"),
+      link: normalizeUrl(source.link, "Project link", PORTFOLIO_MAX.projectLink),
+      bullets: cleanLines(source.bullets, PORTFOLIO_MAX.bulletLine, PORTFOLIO_LIMITS.projectBulletsMax, "Bullet"),
+      tags: cleanTags(source.tags),
+    };
+  }
+
+  if (key === "experience") {
+    const startYear = parseYear(source.startYear, "Start year");
+    const startMonth = parseMonth(source.startMonth, "Start month");
+    const endYear = parseYear(source.endYear, "End year");
+    const endMonth = parseMonth(source.endMonth, "End month");
+    const isPresent = Boolean(source.isPresent ?? source.present);
+    validateChronology({ startYear, startMonth, endYear, endMonth, isPresent });
+    return {
+      role: cleanText(source.role, PORTFOLIO_MAX.experienceRole, "Role", true),
+      company: cleanText(source.company, PORTFOLIO_MAX.experienceCompany, "Company", true),
+      location: cleanText(source.location, PORTFOLIO_MAX.experienceLocation, "Location"),
+      startYear,
+      startMonth,
+      endYear: isPresent ? undefined : endYear,
+      endMonth: isPresent ? undefined : endMonth,
+      isPresent,
+      present: isPresent,
+      bullets: cleanLines(source.bullets, PORTFOLIO_MAX.bulletLine, PORTFOLIO_LIMITS.experienceBulletsMax, "Bullet"),
+    };
+  }
+
+  if (key === "education") {
+    const startYear = parseYear(source.startYear, "Start year");
+    const startMonth = parseMonth(source.startMonth, "Start month");
+    const endYear = parseYear(source.endYear, "End year");
+    const endMonth = parseMonth(source.endMonth, "End month");
+    validateChronology({ startYear, startMonth, endYear, endMonth, isPresent: false });
+    return {
+      degree: cleanText(source.degree, PORTFOLIO_MAX.educationDegree, "Degree", true),
+      field: cleanText(source.field, PORTFOLIO_MAX.educationField, "Field"),
+      institution: cleanText(source.institution, PORTFOLIO_MAX.educationInstitution, "Institution", true),
+      startYear,
+      startMonth,
+      endYear,
+      endMonth,
+      grade: cleanText(source.grade, PORTFOLIO_MAX.educationGrade, "Grade"),
+    };
+  }
+
+  if (key === "certifications" || key === "achievements") {
+    return {
+      title: cleanText(source.title, PORTFOLIO_MAX.certificationTitle, "Title", true),
+      issuer: cleanText(source.issuer, PORTFOLIO_MAX.certificationIssuer, "Issuer"),
+      year: parseYear(source.year, "Year"),
+      note: cleanText(source.note, PORTFOLIO_MAX.note, "Note"),
+    };
+  }
+
+  if (key === "contact") {
+    const links = Array.isArray(source.links)
+      ? source.links
+          .map((entry: any) => ({
+            label: cleanText(entry?.label, PORTFOLIO_MAX.linkLabel, "Link label"),
+            url: normalizeUrl(entry?.url, "Link URL", PORTFOLIO_MAX.linkUrl),
+          }))
+          .filter((entry) => entry.label && entry.url)
+      : [];
+    const deduped: Array<{ label: string; url: string }> = [];
+    for (const entry of links) {
+      if (!deduped.some((candidate) => candidate.url === entry.url && candidate.label === entry.label)) {
+        deduped.push(entry);
+      }
+    }
+
+    return {
+      callToActionTitle: cleanText(source.callToActionTitle, PORTFOLIO_MAX.ctaTitle, "CTA title"),
+      callToActionText: cleanText(source.callToActionText, PORTFOLIO_MAX.ctaText, "CTA text"),
+      email: cleanEmail(source.email, "Email"),
+      website: normalizeUrl(source.website, "Website", PORTFOLIO_MAX.profileWebsite),
+      links: deduped,
+    };
+  }
+
+  if (key === "skills") {
+    const groups = Array.isArray(source.groups) ? source.groups : [];
+    return {
+      groups: groups.map((group: any) => ({
+        name: cleanText(group?.name, PORTFOLIO_MAX.skillsGroupName, "Group name"),
+        items: cleanLines(group?.items, PORTFOLIO_MAX.skillItem, 12, "Skill"),
+      })),
+    };
+  }
+
+  return source;
+};
+
 export const listProjects = defineAction({
   input: z.object({}).optional(),
   async handler(_input, context: ActionAPIContext) {
@@ -267,7 +519,7 @@ export const createProject = defineAction({
   async handler(input, context: ActionAPIContext) {
     const user = requireUser(context);
     ensureTemplateAccess(input.themeKey, user.isPaid);
-    const title = normalizeText(input.title);
+    const title = cleanText(input.title, PORTFOLIO_MAX.projectTitle, "Title", true);
     if (!title) {
       throw new ActionError({ code: "BAD_REQUEST", message: "Title is required." });
     }
@@ -425,7 +677,7 @@ export const updateProject = defineAction({
     }
 
     if (slug !== undefined) {
-      const normalizedSlug = normalizeText(slug);
+      const normalizedSlug = cleanText(slug, PORTFOLIO_MAX.slug, "Slug", true);
       if (!normalizedSlug) {
         throw new ActionError({ code: "BAD_REQUEST", message: "Slug is required." });
       }
@@ -585,13 +837,14 @@ export const createItem = defineAction({
   async handler({ sectionId, data }, context: ActionAPIContext) {
     const user = requireUser(context);
     const section = await getOwnedSection(sectionId, user.id, user.isPaid);
+    const sanitized = sanitizeSectionData(section.key as PortfolioSectionKey, data);
 
     const now = new Date();
-    const [{ value: itemCountRaw } = { value: 0 }] = await db
-      .select({ value: count() })
+    const items = await db
+      .select({ order: PortfolioItem.order })
       .from(PortfolioItem)
       .where(eq(PortfolioItem.sectionId, sectionId));
-    const order = Number(itemCountRaw ?? 0) + 1;
+    const order = items.reduce((maxOrder, item) => Math.max(maxOrder, Number(item.order) || 0), 0) + 1;
 
     const [created] = await db
       .insert(PortfolioItem)
@@ -599,7 +852,7 @@ export const createItem = defineAction({
         id: randomUUID(),
         sectionId,
         order,
-        data: JSON.stringify(data ?? {}),
+        data: JSON.stringify(sanitized),
         createdAt: now,
         updatedAt: now,
       })
@@ -617,10 +870,11 @@ export const updateItem = defineAction({
   async handler({ itemId, data }, context: ActionAPIContext) {
     const user = requireUser(context);
     const { section } = await getOwnedItem(itemId, user.id, user.isPaid);
+    const sanitized = sanitizeSectionData(section.key as PortfolioSectionKey, data);
 
     const [updated] = await db
       .update(PortfolioItem)
-      .set({ data: JSON.stringify(data ?? {}), updatedAt: new Date() })
+      .set({ data: JSON.stringify(sanitized), updatedAt: new Date() })
       .where(eq(PortfolioItem.id, itemId))
       .returning();
 

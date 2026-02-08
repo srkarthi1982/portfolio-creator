@@ -9,6 +9,11 @@ import type {
   PortfolioVisibility,
 } from "./types";
 import { TEMPLATE_KEYS, TEMPLATE_OPTIONS, isProTemplate, sectionLabels } from "./helpers";
+import {
+  PORTFOLIO_MAX,
+  PORTFOLIO_MONTH_OPTIONS,
+  getPortfolioYearOptions,
+} from "./constraints";
 
 type TemplateKey = (typeof TEMPLATE_OPTIONS)[number]["key"];
 const DEFAULT_TEMPLATE_KEY = TEMPLATE_OPTIONS[0].key as TemplateKey;
@@ -22,6 +27,7 @@ const defaultState = () => ({
   activeProjectId: null as string | null,
   loading: false,
   error: null as string | null,
+  warning: null as string | null,
   success: null as string | null,
   drawerOpen: false,
   activeSectionKey: null as PortfolioSectionKey | null,
@@ -102,6 +108,30 @@ const formatLinks = (value: Array<{ label: string; url: string }>) => {
     .trim();
 };
 
+const getAtPath = (source: Record<string, any>, path: string) =>
+  path.split(".").reduce<any>((cursor, segment) => {
+    if (!cursor || typeof cursor !== "object") return undefined;
+    return cursor[segment];
+  }, source);
+
+const setAtPath = (target: Record<string, any>, path: string, value: any) => {
+  const segments = path.split(".");
+  let cursor: Record<string, any> = target;
+  for (let index = 0; index < segments.length - 1; index += 1) {
+    const segment = segments[index];
+    if (!cursor[segment] || typeof cursor[segment] !== "object") {
+      cursor[segment] = {};
+    }
+    cursor = cursor[segment];
+  }
+  cursor[segments[segments.length - 1]] = value;
+};
+
+const parseNumber = (value: any) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
 const emptyProfile = () => ({
   fullName: "",
   headline: "",
@@ -135,6 +165,11 @@ const emptyFeaturedProject = () => ({
   name: "",
   description: "",
   link: "",
+  startYear: "",
+  startMonth: "",
+  endYear: "",
+  endMonth: "",
+  isPresent: false,
   bullets: "",
   tags: "",
 });
@@ -142,8 +177,11 @@ const emptyFeaturedProject = () => ({
 const emptyExperience = () => ({
   role: "",
   company: "",
-  start: "",
-  end: "",
+  startYear: "",
+  startMonth: "",
+  endYear: "",
+  endMonth: "",
+  isPresent: false,
   location: "",
   bullets: "",
 });
@@ -152,8 +190,10 @@ const emptyEducation = () => ({
   degree: "",
   field: "",
   institution: "",
-  start: "",
-  end: "",
+  startYear: "",
+  startMonth: "",
+  endYear: "",
+  endMonth: "",
   grade: "",
 });
 
@@ -194,6 +234,11 @@ const toFormData = (key: PortfolioSectionKey, data: any) => {
     return {
       ...emptyFeaturedProject(),
       ...(data ?? {}),
+      startYear: data?.startYear ?? "",
+      startMonth: data?.startMonth ?? "",
+      endYear: data?.endYear ?? "",
+      endMonth: data?.endMonth ?? "",
+      isPresent: Boolean(data?.isPresent ?? data?.present),
       bullets: fromLines(data?.bullets ?? []),
       tags: fromTags(data?.tags ?? []),
     };
@@ -202,11 +247,23 @@ const toFormData = (key: PortfolioSectionKey, data: any) => {
     return {
       ...emptyExperience(),
       ...(data ?? {}),
+      startYear: data?.startYear ?? "",
+      startMonth: data?.startMonth ?? "",
+      endYear: data?.endYear ?? "",
+      endMonth: data?.endMonth ?? "",
+      isPresent: Boolean(data?.isPresent ?? data?.present),
       bullets: fromLines(data?.bullets ?? []),
     };
   }
   if (key === "education") {
-    return { ...emptyEducation(), ...(data ?? {}) };
+    return {
+      ...emptyEducation(),
+      ...(data ?? {}),
+      startYear: data?.startYear ?? "",
+      startMonth: data?.startMonth ?? "",
+      endYear: data?.endYear ?? "",
+      endMonth: data?.endMonth ?? "",
+    };
   }
   if (key === "certifications") {
     return { ...emptyCertification(), ...(data ?? {}) };
@@ -252,31 +309,56 @@ const toPayload = (key: PortfolioSectionKey, data: Record<string, any>) => {
     };
   }
   if (key === "featuredProjects") {
+    const startYear = parseNumber(data.startYear);
+    const startMonth = parseNumber(data.startMonth);
+    const endYear = parseNumber(data.endYear);
+    const endMonth = parseNumber(data.endMonth);
+    const isPresent = Boolean(data.isPresent);
     return {
       name: normalizeText(data.name),
       description: normalizeText(data.description),
       link: normalizeText(data.link),
+      startYear,
+      startMonth,
+      endYear: isPresent ? undefined : endYear,
+      endMonth: isPresent ? undefined : endMonth,
+      isPresent,
       bullets: toLines(data.bullets ?? ""),
       tags: toTags(data.tags ?? ""),
     };
   }
   if (key === "experience") {
+    const startYear = parseNumber(data.startYear);
+    const startMonth = parseNumber(data.startMonth);
+    const endYear = parseNumber(data.endYear);
+    const endMonth = parseNumber(data.endMonth);
+    const isPresent = Boolean(data.isPresent);
     return {
       role: normalizeText(data.role),
       company: normalizeText(data.company),
-      start: normalizeText(data.start),
-      end: normalizeText(data.end),
+      startYear,
+      startMonth,
+      endYear: isPresent ? undefined : endYear,
+      endMonth: isPresent ? undefined : endMonth,
+      isPresent,
+      present: isPresent,
       location: normalizeText(data.location),
       bullets: toLines(data.bullets ?? ""),
     };
   }
   if (key === "education") {
+    const startYear = parseNumber(data.startYear);
+    const startMonth = parseNumber(data.startMonth);
+    const endYear = parseNumber(data.endYear);
+    const endMonth = parseNumber(data.endMonth);
     return {
       degree: normalizeText(data.degree),
       field: normalizeText(data.field),
       institution: normalizeText(data.institution),
-      start: normalizeText(data.start),
-      end: normalizeText(data.end),
+      startYear,
+      startMonth,
+      endYear,
+      endMonth,
       grade: normalizeText(data.grade),
     };
   }
@@ -284,7 +366,7 @@ const toPayload = (key: PortfolioSectionKey, data: Record<string, any>) => {
     return {
       title: normalizeText(data.title),
       issuer: normalizeText(data.issuer),
-      year: normalizeText(data.year),
+      year: parseNumber(data.year),
       note: normalizeText(data.note),
     };
   }
@@ -292,7 +374,7 @@ const toPayload = (key: PortfolioSectionKey, data: Record<string, any>) => {
     return {
       title: normalizeText(data.title),
       issuer: normalizeText(data.issuer),
-      year: normalizeText(data.year),
+      year: parseNumber(data.year),
       note: normalizeText(data.note),
     };
   }
@@ -307,6 +389,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
   activeProjectId: string | null = null;
   loading = false;
   error: string | null = null;
+  warning: string | null = null;
   success: string | null = null;
   drawerOpen = false;
   activeSectionKey: PortfolioSectionKey | null = null;
@@ -316,6 +399,8 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
   isPaid = false;
   paywallMessage: string | null = null;
   templateOptions = TEMPLATE_OPTIONS;
+  yearOptions = getPortfolioYearOptions();
+  monthOptions = PORTFOLIO_MONTH_OPTIONS;
   newProject = { title: "", themeKey: DEFAULT_TEMPLATE_KEY };
   projectMeta = {
     title: "",
@@ -372,6 +457,77 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
     if (this.activeSectionKey === "certifications") return data?.title ?? "Certification";
     if (this.activeSectionKey === "achievements") return data?.title ?? "Achievement";
     return "Item";
+  }
+
+  enforceLimit(path: string, max: number) {
+    const current = getAtPath(this.formData, path);
+    if (typeof current !== "string") return;
+    if (current.length <= max) return;
+    setAtPath(this.formData, path, current.slice(0, max));
+  }
+
+  enforceLineLimit(path: string, maxLine: number, maxItems = 20) {
+    const current = getAtPath(this.formData, path);
+    if (typeof current !== "string") return;
+    const values = current
+      .split("\n")
+      .map((line) => line.slice(0, maxLine))
+      .slice(0, maxItems);
+    setAtPath(this.formData, path, values.join("\n"));
+  }
+
+  enforceTagsLimit(path: string, maxTagLength: number, maxItems: number) {
+    const current = getAtPath(this.formData, path);
+    if (typeof current !== "string") return;
+    const values = current
+      .split(",")
+      .map((tag) => tag.trim().slice(0, maxTagLength))
+      .filter(Boolean)
+      .slice(0, maxItems);
+    setAtPath(this.formData, path, values.join(", "));
+  }
+
+  togglePresent() {
+    const isPresent = Boolean(this.formData.isPresent);
+    this.formData.isPresent = isPresent;
+    if (isPresent) {
+      this.formData.endYear = "";
+      this.formData.endMonth = "";
+    }
+  }
+
+  private validateDateForm(sectionKey: PortfolioSectionKey, payload: Record<string, any>) {
+    if (!["featuredProjects", "experience", "education"].includes(sectionKey)) return;
+    const startYear = parseNumber(payload.startYear);
+    const startMonth = parseNumber(payload.startMonth);
+    const endYear = parseNumber(payload.endYear);
+    const endMonth = parseNumber(payload.endMonth);
+    const isPresent = Boolean(payload.isPresent ?? payload.present);
+    const maxYear = this.yearOptions[0];
+    const minYear = this.yearOptions[this.yearOptions.length - 1];
+
+    if ((startYear && (startYear < minYear || startYear > maxYear)) || (endYear && (endYear < minYear || endYear > maxYear))) {
+      throw new Error(`Years must be between ${minYear} and ${maxYear}.`);
+    }
+    if (isPresent && (endYear || endMonth)) {
+      throw new Error("End date must be empty when Present is enabled.");
+    }
+    if (startMonth && !startYear) {
+      throw new Error("Start year is required when start month is set.");
+    }
+    if (endMonth && !endYear) {
+      throw new Error("End year is required when end month is set.");
+    }
+    if ((endYear || endMonth) && !startYear) {
+      throw new Error("Start year is required when end date is set.");
+    }
+    if (startYear && endYear) {
+      const startValue = startYear * 100 + (startMonth ?? 1);
+      const endValue = endYear * 100 + (endMonth ?? 12);
+      if (endValue < startValue) {
+        throw new Error("End date must be after start date.");
+      }
+    }
   }
 
   isTemplateLocked(templateKey: string) {
@@ -440,6 +596,10 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
     const themeKey = (this.newProject.themeKey || DEFAULT_TEMPLATE_KEY) as TemplateKey;
     if (!title) {
       this.error = "Title is required.";
+      return;
+    }
+    if (title.length > PORTFOLIO_MAX.projectTitle) {
+      this.error = `Title must be ${PORTFOLIO_MAX.projectTitle} characters or fewer.`;
       return;
     }
     if (!TEMPLATE_KEYS.includes(themeKey as any)) {
@@ -520,10 +680,28 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
     this.paywallMessage = null;
 
     try {
+      const title = normalizeText(this.projectMeta.title);
+      if (!title) {
+        this.error = "Title is required.";
+        return;
+      }
+      if (title.length > PORTFOLIO_MAX.projectTitle) {
+        this.error = `Title must be ${PORTFOLIO_MAX.projectTitle} characters or fewer.`;
+        return;
+      }
+      const slug = normalizeText(this.projectMeta.slug);
+      if (!slug) {
+        this.error = "Slug is required.";
+        return;
+      }
+      if (slug.length > PORTFOLIO_MAX.slug) {
+        this.error = `Slug must be ${PORTFOLIO_MAX.slug} characters or fewer.`;
+        return;
+      }
       const res = await actions.portfolioCreator.updateProject({
         projectId: this.activeProject.project.id,
-        title: this.projectMeta.title,
-        slug: this.projectMeta.slug,
+        title,
+        slug,
         visibility: this.projectMeta.visibility,
         themeKey: this.projectMeta.themeKey,
       });
@@ -608,6 +786,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
     this.activeSectionKey = key;
     this.drawerOpen = true;
     this.editingItemId = null;
+    this.warning = null;
     const section = this.activeProject?.sections.find((entry) => entry.key === key);
     const item = isSingleSection(key) ? section?.items?.[0] : null;
     this.formData = toFormData(key, item?.data ?? {});
@@ -616,6 +795,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
   closeDrawer() {
     this.drawerOpen = false;
     this.editingItemId = null;
+    this.warning = null;
   }
 
   editItem(item: PortfolioItemDTO) {
@@ -662,8 +842,10 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
     try {
       this.loading = true;
       this.error = null;
+      this.warning = null;
       this.success = null;
       this.paywallMessage = null;
+      this.validateDateForm(this.activeSectionKey, payload);
 
       if (isSingleSection(this.activeSectionKey)) {
         const existing = section.items[0];
