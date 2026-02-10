@@ -1,9 +1,9 @@
 ---
 import "@ansiversa/components/styles/global.css";
-import "../styles/global.css";
+import { resolvePortfolioPublicTemplate } from "@ansiversa/components";
 import { PortfolioItem, PortfolioProject, PortfolioSection, asc, db, eq, inArray } from "astro:db";
-import PortfolioPreview from "../components/PortfolioPreview.astro";
-import { buildPortfolioDataFromSections, normalizePortfolioItem, normalizePortfolioSection } from "../modules/portfolio-creator/helpers";
+import { normalizePortfolioItem, normalizePortfolioSection, normalizePortfolioProject } from "../modules/portfolio-creator/helpers";
+import { buildPortfolioPublicData } from "../modules/portfolio-creator/publicOutput";
 
 const slug = Astro.params.slug ?? "";
 const [project] = await db
@@ -44,7 +44,9 @@ const normalizedSections = sections.map((section) => ({
   items: itemsBySection.get(section.id) ?? [],
 }));
 
-const portfolioData = buildPortfolioDataFromSections(normalizedSections);
+const normalizedProject = normalizePortfolioProject(project);
+const portfolioData = buildPortfolioPublicData(normalizedProject, normalizedSections);
+const Template = resolvePortfolioPublicTemplate(normalizedProject.themeKey);
 const pageTitle = project.title ? `${project.title} – Portfolio` : "Portfolio";
 const isUnlisted = project.visibility === "unlisted";
 ---
@@ -57,6 +59,6 @@ const isUnlisted = project.visibility === "unlisted";
     {isUnlisted ? <meta name="robots" content="noindex, nofollow" /> : null}
   </head>
   <body>
-    <PortfolioPreview data={portfolioData} />
+    <Template data={portfolioData} />
   </body>
 </html>

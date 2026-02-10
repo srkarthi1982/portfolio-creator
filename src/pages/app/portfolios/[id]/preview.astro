@@ -1,10 +1,8 @@
 ---
 import "@ansiversa/components/styles/global.css";
-import "../../../../styles/global.css";
-import { AvButton, AvContainer } from "@ansiversa/components";
+import { resolvePortfolioPublicTemplate } from "@ansiversa/components";
 import { actions } from "astro:actions";
-import PortfolioPreview from "../../../../components/PortfolioPreview.astro";
-import { buildPortfolioDataFromSections } from "../../../../modules/portfolio-creator/helpers";
+import { buildPortfolioPublicData } from "../../../../modules/portfolio-creator/publicOutput";
 import type { PortfolioProjectDetail } from "../../../../modules/portfolio-creator/types";
 
 const projectId = Astro.params.id ?? "";
@@ -21,7 +19,10 @@ try {
   isPaywall = loadError.toLowerCase().includes("upgrade to pro");
 }
 
-const portfolioData = projectData ? buildPortfolioDataFromSections(projectData.sections ?? []) : null;
+const portfolioData = projectData
+  ? buildPortfolioPublicData(projectData.project, projectData.sections ?? [])
+  : null;
+const Template = resolvePortfolioPublicTemplate(projectData?.project?.themeKey);
 const pageTitle = projectData?.project?.title
   ? `${projectData.project.title} – Preview`
   : "Portfolio Preview";
@@ -35,18 +36,21 @@ const pageTitle = projectData?.project?.title
   </head>
   <body>
     {loadError ? (
-      <AvContainer>
-        <div class="av-alert av-alert-danger" role="status">{loadError}</div>
+      <main class="mx-auto w-full max-w-3xl px-4 py-8">
+        <div class="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700" role="status">{loadError}</div>
         {isPaywall ? (
-          <div class="av-portfolio-preview-cta">
-            <AvButton href="https://ansiversa.com/pricing" variant="primary">
+          <div class="mt-4">
+            <a
+              href="https://ansiversa.com/pricing"
+              class="inline-flex rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white no-underline"
+            >
               View pricing
-            </AvButton>
+            </a>
           </div>
         ) : null}
-      </AvContainer>
+      </main>
     ) : portfolioData ? (
-      <PortfolioPreview data={portfolioData} />
+      <Template data={portfolioData} />
     ) : null}
   </body>
 </html>

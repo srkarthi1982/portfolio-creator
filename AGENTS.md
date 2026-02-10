@@ -57,6 +57,10 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## Verification Log
 
+- 2026-02-10 `npm run typecheck` (pass; 0 errors, 0 warnings, existing baseRepository hint remains) after migrating public/preview rendering to `@ansiversa/components` portfolio templates.
+- 2026-02-10 `npm run build` (pass; astro build --remote complete) after package template integration and public output refactor.
+- 2026-02-10 `npm install @ansiversa/components@^0.0.126` (updated dependency to consume published package templates and resolver).
+- 2026-02-10 Static route parity checks by code inspection: `src/pages/[slug].astro` and `src/pages/app/portfolios/[id]/preview.astro` now resolve/render package templates via `resolvePortfolioPublicTemplate(themeKey)` and no longer render local `PortfolioPreview`; `src/layouts/AppShell.astro` remains app-shell-only wrapper while public routes render standalone white output.
 - 2026-02-10 `npm run typecheck` (pass; 0 errors, 0 warnings, existing baseRepository hint remains).
 - 2026-02-10 `npm run build` (pass; astro build --remote complete).
 - 2026-02-10 `mcp__browser_tools__run_playwright_script` on local dev route failed to validate UI due `Invalid URL` DB env runtime error in `/app/portfolios/*`; captured diagnostic screenshot `browser:/tmp/codex_browser_invocations/ef359bc49d432205/artifacts/artifacts/portfolio-editor-mobile.png`.
@@ -91,6 +95,15 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## Task Log (Recent)
 - Keep newest first; include date and short summary.
+- 2026-02-10 Refactored public output (`/[slug]`) and preview (`/app/portfolios/[id]/preview`) to consume package templates from `@ansiversa/components` via `PortfolioPublicData` mapping (`src/modules/portfolio-creator/publicOutput.ts`) and `resolvePortfolioPublicTemplate(themeKey)`; removed local public rendering path from these routes and updated dependency to `^0.0.126`.
+- 2026-02-10 Dark theme leak fix aligned to package scope: public output routes now render neutral/white template pages while dark treatment is constrained to app-shell wrapper via `.av-theme-app` in shared components package.
 - 2026-02-10 Mobile UI pass on `/app/portfolios/[id]`: replaced section status text with Eye/Eye-off icons + sr-only/title, added sticky responsive drawer footer actions (Save/Hide/Close), and added footer Close action; files touched: `src/pages/app/portfolios/[id].astro`, `src/styles/global.css`.
 - 2026-02-09 Enforced repo-level AGENTS mandatory task-log update rule for Codex/AI execution.
 - 2026-02-09 Verified repo AGENTS contract linkage to workspace source-of-truth.
+
+## Template Visual Parity Checklist
+- Header identity renders: name/title/headline/location are visible with stable hierarchy.
+- Section visibility is respected: disabled/hidden sections do not render.
+- Featured projects render: title, description, link, bullets, tags.
+- Contact renders: email/phone/website/custom links with valid href targets.
+- Output parity on both routes: `/<slug>` and `/app/portfolios/[id]/preview` render the same template for a given `themeKey`.
