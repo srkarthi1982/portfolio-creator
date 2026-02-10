@@ -184,8 +184,65 @@ const monthOptions = PORTFOLIO_MONTH_OPTIONS;
                         <span class="av-portfolio-section-button__meta">
                           <template x-if="activeProject">
                             <span
-                              x-text={`(activeProject.sections.find(section => section.key === '${key}')?.isEnabled ?? true) ? 'Enabled' : 'Hidden'`}
-                            ></span>
+                              class="av-portfolio-section-status"
+                              x-bind:title={`(activeProject.sections.find(section => section.key === '${key}')?.isEnabled ?? true) ? 'Enabled' : 'Hidden'`}
+                            >
+                              <svg
+                                class="av-portfolio-status-icon"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                aria-hidden="true"
+                                x-show={`(activeProject.sections.find(section => section.key === '${key}')?.isEnabled ?? true)`}
+                              >
+                                <path
+                                  d="M2 12C3.8 8.3 7.6 6 12 6C16.4 6 20.2 8.3 22 12C20.2 15.7 16.4 18 12 18C7.6 18 3.8 15.7 2 12Z"
+                                  stroke="currentColor"
+                                  stroke-width="1.6"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                ></path>
+                                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"></circle>
+                              </svg>
+                              <svg
+                                class="av-portfolio-status-icon"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                aria-hidden="true"
+                                x-show={`!(activeProject.sections.find(section => section.key === '${key}')?.isEnabled ?? true)`}
+                              >
+                                <path
+                                  d="M3 3L21 21"
+                                  stroke="currentColor"
+                                  stroke-width="1.6"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                ></path>
+                                <path
+                                  d="M10.6 6.2C11.1 6.1 11.5 6 12 6C16.4 6 20.2 8.3 22 12C21.4 13.2 20.5 14.3 19.5 15.2"
+                                  stroke="currentColor"
+                                  stroke-width="1.6"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                ></path>
+                                <path
+                                  d="M14.8 14.8C14.1 15.6 13.1 16 12 16C9.8 16 8 14.2 8 12C8 10.9 8.4 9.9 9.2 9.2"
+                                  stroke="currentColor"
+                                  stroke-width="1.6"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                ></path>
+                                <path
+                                  d="M2 12C2.7 10.6 3.7 9.3 4.9 8.3"
+                                  stroke="currentColor"
+                                  stroke-width="1.6"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                ></path>
+                              </svg>
+                              <span class="av-visually-hidden" x-text={`(activeProject.sections.find(section => section.key === '${key}')?.isEnabled ?? true) ? 'Enabled' : 'Hidden'`}></span>
+                            </span>
                           </template>
                         </span>
                       </button>
@@ -242,9 +299,6 @@ const monthOptions = PORTFOLIO_MONTH_OPTIONS;
                       <AvInput label="GitHub" type="url" name="github" x-model="formData.github" maxlength={PORTFOLIO_MAX.profileGithub} @input={`enforceLimit('github', ${PORTFOLIO_MAX.profileGithub})`} />
                       <AvInput label="LinkedIn" type="url" name="linkedin" x-model="formData.linkedin" maxlength={PORTFOLIO_MAX.profileLinkedin} @input={`enforceLimit('linkedin', ${PORTFOLIO_MAX.profileLinkedin})`} />
                     </div>
-                    <div class="av-row-wrap">
-                      <AvButton type="submit" :disabled="loading">Save profile</AvButton>
-                    </div>
                   </form>
                 </template>
 
@@ -259,9 +313,6 @@ const monthOptions = PORTFOLIO_MONTH_OPTIONS;
                       @input={`enforceLimit('text', ${PORTFOLIO_MAX.aboutText})`}
                     />
                     <p class="av-form-hint" x-text="`${(formData.text || '').length} / ${PORTFOLIO_MAX.aboutText}`"></p>
-                    <div class="av-row-wrap">
-                      <AvButton type="submit" :disabled="loading">Save about</AvButton>
-                    </div>
                   </form>
                 </template>
 
@@ -280,9 +331,6 @@ const monthOptions = PORTFOLIO_MONTH_OPTIONS;
                         <p class="av-form-hint">Each skill max {PORTFOLIO_MAX.skillItem} characters.</p>
                       </div>
                     </template>
-                    <div class="av-row-wrap">
-                      <AvButton type="submit" :disabled="loading">Save skills</AvButton>
-                    </div>
                   </form>
                 </template>
 
@@ -316,9 +364,6 @@ const monthOptions = PORTFOLIO_MONTH_OPTIONS;
                       x-model="formData.links"
                       @input={`enforceLineLimit('links', ${PORTFOLIO_MAX.linkLabel + PORTFOLIO_MAX.linkUrl + 3}, 8)`}
                     />
-                    <div class="av-row-wrap">
-                      <AvButton type="submit" :disabled="loading">Save contact</AvButton>
-                    </div>
                   </form>
                 </template>
 
@@ -546,19 +591,6 @@ const monthOptions = PORTFOLIO_MONTH_OPTIONS;
                   </div>
                 </template>
 
-                <template x-if="activeSectionKey && activeSection">
-                  <div class="av-row-wrap">
-                    <AvButton
-                      type="button"
-                      variant="ghost"
-                      @click.prevent="toggleSectionEnabled(activeSection.id, !activeSection.isEnabled)"
-                      :disabled="loading"
-                    >
-                      <span x-text="activeSection.isEnabled ? 'Hide section' : 'Show section'"></span>
-                    </AvButton>
-                  </div>
-                </template>
-
                 <template x-if="error">
                   <div class="av-alert av-alert-danger" role="status" x-text="error"></div>
                 </template>
@@ -567,6 +599,29 @@ const monthOptions = PORTFOLIO_MONTH_OPTIONS;
                 </template>
                 <template x-if="success">
                   <div class="av-alert av-alert-success" role="status" x-text="success"></div>
+                </template>
+
+                <template x-if="activeSectionKey && activeSection">
+                  <div class="av-portfolio-drawer-footer">
+                    <div class="av-portfolio-drawer-footer__action" x-show="!['featuredProjects', 'experience', 'education', 'certifications', 'achievements'].includes(activeSectionKey)">
+                      <AvButton type="button" @click.prevent="saveActiveSection()" :disabled="loading">
+                        <span x-text="`Save ${getSectionLabel(activeSectionKey).toLowerCase()}`"></span>
+                      </AvButton>
+                    </div>
+                    <div class="av-portfolio-drawer-footer__action">
+                      <AvButton
+                        type="button"
+                        variant="ghost"
+                        @click.prevent="toggleSectionEnabled(activeSection.id, !activeSection.isEnabled)"
+                        :disabled="loading"
+                      >
+                        <span x-text="activeSection.isEnabled ? 'Hide section' : 'Show section'"></span>
+                      </AvButton>
+                    </div>
+                    <div class="av-portfolio-drawer-footer__action">
+                      <AvButton type="button" variant="ghost" @click.prevent="closeDrawer()" :disabled="loading">Close</AvButton>
+                    </div>
+                  </div>
                 </template>
               </div>
             </AvDrawer>

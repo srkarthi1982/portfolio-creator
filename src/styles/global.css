@@ -197,3 +197,64 @@
     height: 480px;
   }
 }
+
+.av-portfolio-section-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--av-text-soft);
+  opacity: 0.85;
+}
+
+.av-portfolio-status-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.av-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.av-portfolio-drawer-footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  background: var(--av-surface, #0b1120);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.av-portfolio-drawer-footer__action {
+  display: flex;
+}
+
+.av-portfolio-drawer-footer__action :where(button, a) {
+  width: 100%;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .av-portfolio-drawer-footer {
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .av-portfolio-drawer-footer__action {
+    width: auto;
+  }
+
+  .av-portfolio-drawer-footer__action :where(button, a) {
+    width: auto;
+  }
+}
