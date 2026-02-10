@@ -57,6 +57,9 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## Verification Log
 
+- 2026-02-10 `npm run typecheck` (pass; 0 errors, 0 warnings, existing baseRepository hint remains).
+- 2026-02-10 `npm run build` (pass; astro build --remote complete).
+- 2026-02-10 `mcp__browser_tools__run_playwright_script` on local dev route failed to validate UI due `Invalid URL` DB env runtime error in `/app/portfolios/*`; captured diagnostic screenshot `browser:/tmp/codex_browser_invocations/ef359bc49d432205/artifacts/artifacts/portfolio-editor-mobile.png`.
 - 2026-02-08 `rg -n -e 'class=\"[^\"]*(^| )(border|bg|text|grid|gap)(-|:)|class=\"[^\"]*(^| )(sm:|lg:)' src/pages/app/portfolios` (no matches for raw utility classes).
 - 2026-02-08 `rg -n 'style=\"' src/pages/app/portfolios` (no matches).
 - 2026-02-08 `npm run typecheck` (pass; 0 errors, 0 warnings, existing baseRepository hint remains).
@@ -88,5 +91,6 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## Task Log (Recent)
 - Keep newest first; include date and short summary.
+- 2026-02-10 Mobile UI pass on `/app/portfolios/[id]`: replaced section status text with Eye/Eye-off icons + sr-only/title, added sticky responsive drawer footer actions (Save/Hide/Close), and added footer Close action; files touched: `src/pages/app/portfolios/[id].astro`, `src/styles/global.css`.
 - 2026-02-09 Enforced repo-level AGENTS mandatory task-log update rule for Codex/AI execution.
 - 2026-02-09 Verified repo AGENTS contract linkage to workspace source-of-truth.
