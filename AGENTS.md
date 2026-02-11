@@ -95,6 +95,7 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## Task Log (Recent)
 - Keep newest first; include date and short summary.
+- 2026-02-11 Fixed editor top action CTA behavior for visibility states on `/app/portfolios/[id]`: private now shows **Preview** to `/app/portfolios/{id}/preview`, public/unlisted open `/{slug}` with missing-slug disabled tooltip fallback; added subtle visibility indicator label (Private 🔒 / Public 🌐 / Unlisted 🔗) and responsive styles for mobile-safe wrapping.
 - 2026-02-10 Refactored public output (`/[slug]`) and preview (`/app/portfolios/[id]/preview`) to consume package templates from `@ansiversa/components` via `PortfolioPublicData` mapping (`src/modules/portfolio-creator/publicOutput.ts`) and `resolvePortfolioPublicTemplate(themeKey)`; removed local public rendering path from these routes and updated dependency to `^0.0.126`.
 - 2026-02-10 Dark theme leak fix aligned to package scope: public output routes now render neutral/white template pages while dark treatment is constrained to app-shell wrapper via `.av-theme-app` in shared components package.
 - 2026-02-10 Mobile UI pass on `/app/portfolios/[id]`: replaced section status text with Eye/Eye-off icons + sr-only/title, added sticky responsive drawer footer actions (Save/Hide/Close), and added footer Close action; files touched: `src/pages/app/portfolios/[id].astro`, `src/styles/global.css`.

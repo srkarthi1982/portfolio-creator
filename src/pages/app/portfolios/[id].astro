@@ -146,7 +146,12 @@ const monthOptions = PORTFOLIO_MONTH_OPTIONS;
                     </AvButton>
                   </div>
 
-                  <div class="av-row-wrap">
+                  <div class="av-row-wrap av-portfolio-actions-row">
+                    <p
+                      class="av-portfolio-visibility-indicator"
+                      x-bind:title="`Visibility is ${projectMeta.visibility}`"
+                      x-text="`Visibility: ${projectMeta.visibility === 'private' ? 'Private 🔒' : projectMeta.visibility === 'unlisted' ? 'Unlisted 🔗' : 'Public 🌐'}`"
+                    ></p>
                     <AvButton type="submit" :disabled="loading">Save details</AvButton>
                     <AvButton type="button" variant="ghost" @click.prevent="togglePublish()" :disabled="loading">
                       <span x-text="projectMeta.isPublished ? 'Unpublish' : 'Publish'"></span>
@@ -155,10 +160,12 @@ const monthOptions = PORTFOLIO_MONTH_OPTIONS;
                       type="button"
                       variant="ghost"
                       href="#"
-                      x-bind:href="`/${projectMeta.slug}`"
+                      x-bind:href="projectMeta.visibility === 'private' ? `/app/portfolios/${activeProjectId}/preview` : (projectMeta.slug ? `/${projectMeta.slug}` : '#')"
                       target="_blank"
+                      :disabled="projectMeta.visibility !== 'private' && !projectMeta.slug"
+                      x-bind:title="projectMeta.visibility !== 'private' && !projectMeta.slug ? 'Set a slug to view public' : ''"
                     >
-                      View public
+                      <span x-text="projectMeta.visibility === 'private' ? 'Preview' : (projectMeta.visibility === 'unlisted' ? 'View link' : 'View public')"></span>
                     </AvButton>
                   </div>
                 </form>

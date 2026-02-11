@@ -258,3 +258,23 @@
     width: auto;
   }
 }
+
+
+.av-portfolio-actions-row {
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.av-portfolio-visibility-indicator {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--av-text-soft);
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .av-portfolio-visibility-indicator {
+    width: 100%;
+  }
+}
