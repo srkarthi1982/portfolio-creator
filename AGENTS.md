@@ -95,6 +95,7 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## Task Log (Recent)
 - Keep newest first; include date and short summary.
+- 2026-02-12 Fixed Alpine syntax error in `/app/portfolios/[id]` counters (`Unexpected token '{'`) by replacing `x-text` expressions with plain JS concatenation (`length + ' / ' + max`) for title/slug/profile/about/CTA/description counters in `src/pages/app/portfolios/[id].astro`.
 - 2026-02-12 Fixed Alpine runtime crash on `/app/portfolios/[id]` (`PORTFOLIO_MAX is not defined`) by converting profile/editor counter `x-text` expressions to server-inlined max literals in `src/pages/app/portfolios/[id].astro` so browser expressions no longer reference server constants.
 - 2026-02-12 Added portfolio profile photo V1: DB fields on `PortfolioProject` (`profilePhotoKey`, `profilePhotoUrl`, `profilePhotoUpdatedAt`), new `portfolioCreator.updateProfilePhoto` action, editor integration with shared `AvImageUploader` (using `PARENT_WEB_ORIGIN` absolute parent upload endpoint + remove flow), store wiring for save/remove + preview refresh, public data mapper includes `profilePhotoUrl`, and dependency updated to `@ansiversa/components@^0.0.127`.
 - 2026-02-11 Fixed editor top action CTA behavior for visibility states on `/app/portfolios/[id]`: private now shows **Preview** to `/app/portfolios/{id}/preview`, public/unlisted open `/{slug}` with missing-slug disabled tooltip fallback; added subtle visibility indicator label (Private 🔒 / Public 🌐 / Unlisted 🔗) and responsive styles for mobile-safe wrapping.

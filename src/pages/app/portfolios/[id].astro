@@ -113,7 +113,7 @@ const mediaUploadUrl = parentWebOrigin
                       maxlength={PORTFOLIO_MAX.projectTitle}
                       required
                     />
-                    <p class="av-form-hint" x-text={`\${(projectMeta.title || '').length} / ${PORTFOLIO_MAX.projectTitle}`}></p>
+                    <p class="av-form-hint" x-text={`(projectMeta.title || '').length + ' / ' + ${PORTFOLIO_MAX.projectTitle}`}></p>
                     <AvInput
                       label="Slug"
                       name="portfolio-slug"
@@ -122,7 +122,7 @@ const mediaUploadUrl = parentWebOrigin
                       maxlength={PORTFOLIO_MAX.slug}
                       required
                     />
-                    <p class="av-form-hint" x-text={`\${(projectMeta.slug || '').length} / ${PORTFOLIO_MAX.slug}`}></p>
+                    <p class="av-form-hint" x-text={`(projectMeta.slug || '').length + ' / ' + ${PORTFOLIO_MAX.slug}`}></p>
                     <AvSelect
                       label="Visibility"
                       name="portfolio-visibility"
@@ -326,9 +326,9 @@ const mediaUploadUrl = parentWebOrigin
                       </div>
                     </div>
                     <AvInput label="Full name" name="full-name" x-model="formData.fullName" maxlength={PORTFOLIO_MAX.profileFullName} @input={`enforceLimit('fullName', ${PORTFOLIO_MAX.profileFullName})`} required />
-                    <p class="av-form-hint" x-text={`\${(formData.fullName || '').length} / ${PORTFOLIO_MAX.profileFullName}`}></p>
+                    <p class="av-form-hint" x-text={`(formData.fullName || '').length + ' / ' + ${PORTFOLIO_MAX.profileFullName}`}></p>
                     <AvInput label="Headline" name="headline" x-model="formData.headline" maxlength={PORTFOLIO_MAX.profileHeadline} @input={`enforceLimit('headline', ${PORTFOLIO_MAX.profileHeadline})`} />
-                    <p class="av-form-hint" x-text={`\${(formData.headline || '').length} / ${PORTFOLIO_MAX.profileHeadline}`}></p>
+                    <p class="av-form-hint" x-text={`(formData.headline || '').length + ' / ' + ${PORTFOLIO_MAX.profileHeadline}`}></p>
                     <AvInput label="Location" name="location" x-model="formData.location" maxlength={PORTFOLIO_MAX.profileLocation} @input={`enforceLimit('location', ${PORTFOLIO_MAX.profileLocation})`} />
                     <div class="av-portfolio-form-grid">
                       <AvInput label="Email" type="email" name="email" x-model="formData.email" maxlength={PORTFOLIO_MAX.profileEmail} @input={`enforceLimit('email', ${PORTFOLIO_MAX.profileEmail})`} />
@@ -352,7 +352,7 @@ const mediaUploadUrl = parentWebOrigin
                       maxlength={PORTFOLIO_MAX.aboutText}
                       @input={`enforceLimit('text', ${PORTFOLIO_MAX.aboutText})`}
                     />
-                    <p class="av-form-hint" x-text={`\${(formData.text || '').length} / ${PORTFOLIO_MAX.aboutText}`}></p>
+                    <p class="av-form-hint" x-text={`(formData.text || '').length + ' / ' + ${PORTFOLIO_MAX.aboutText}`}></p>
                   </form>
                 </template>
 
@@ -383,7 +383,7 @@ const mediaUploadUrl = parentWebOrigin
                       maxlength={PORTFOLIO_MAX.ctaTitle}
                       @input={`enforceLimit('callToActionTitle', ${PORTFOLIO_MAX.ctaTitle})`}
                     />
-                    <p class="av-form-hint" x-text={`\${(formData.callToActionTitle || '').length} / ${PORTFOLIO_MAX.ctaTitle}`}></p>
+                    <p class="av-form-hint" x-text={`(formData.callToActionTitle || '').length + ' / ' + ${PORTFOLIO_MAX.ctaTitle}`}></p>
                     <AvTextarea
                       label="Call to action text"
                       name="cta-text"
@@ -392,7 +392,7 @@ const mediaUploadUrl = parentWebOrigin
                       maxlength={PORTFOLIO_MAX.ctaText}
                       @input={`enforceLimit('callToActionText', ${PORTFOLIO_MAX.ctaText})`}
                     />
-                    <p class="av-form-hint" x-text={`\${(formData.callToActionText || '').length} / ${PORTFOLIO_MAX.ctaText}`}></p>
+                    <p class="av-form-hint" x-text={`(formData.callToActionText || '').length + ' / ' + ${PORTFOLIO_MAX.ctaText}`}></p>
                     <div class="av-portfolio-form-grid">
                       <AvInput label="Email" type="email" name="contact-email" x-model="formData.email" maxlength={PORTFOLIO_MAX.profileEmail} @input={`enforceLimit('email', ${PORTFOLIO_MAX.profileEmail})`} />
                       <AvInput label="Website" type="url" name="contact-website" x-model="formData.website" maxlength={PORTFOLIO_MAX.profileWebsite} @input={`enforceLimit('website', ${PORTFOLIO_MAX.profileWebsite})`} />
@@ -427,7 +427,7 @@ const mediaUploadUrl = parentWebOrigin
                       <AvInput label="Project name" name="project-name" x-model="formData.name" maxlength={PORTFOLIO_MAX.projectName} @input={`enforceLimit('name', ${PORTFOLIO_MAX.projectName})`} />
                       <AvInput label="Project link" type="url" name="project-link" x-model="formData.link" maxlength={PORTFOLIO_MAX.projectLink} @input={`enforceLimit('link', ${PORTFOLIO_MAX.projectLink})`} />
                       <AvTextarea label="Description" name="project-description" rows={3} x-model="formData.description" maxlength={PORTFOLIO_MAX.projectDescription} @input={`enforceLimit('description', ${PORTFOLIO_MAX.projectDescription})`} />
-                      <p class="av-form-hint" x-text={`\${(formData.description || '').length} / ${PORTFOLIO_MAX.projectDescription}`}></p>
+                      <p class="av-form-hint" x-text={`(formData.description || '').length + ' / ' + ${PORTFOLIO_MAX.projectDescription}`}></p>
                       <div class="av-portfolio-date-grid">
                         <AvSelect label="Start year" name="project-start-year" x-model="formData.startYear">
                           <option value="">Select year</option>
