@@ -57,6 +57,8 @@ export const POST: APIRoute = async ({ cookies, locals, request }) => {
       method: "POST",
       headers: {
         cookie: cookieHeader,
+        origin: parentWebOrigin,
+        referer: `${parentWebOrigin}/`,
       },
       body: formData,
     });
