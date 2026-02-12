@@ -95,6 +95,7 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## Task Log (Recent)
 - Keep newest first; include date and short summary.
+- 2026-02-12 Corrected parent upload origin normalization in `src/pages/app/portfolios/[id].astro` to canonicalize both `ansiversa.com` and `www.ansiversa.com` to `https://www.ansiversa.com`, fixing browser CORS failures caused by apex->www `307` redirects on `/api/media/upload.json`.
 - 2026-02-12 Added upload-origin hardening in `src/pages/app/portfolios/[id].astro`: normalize parent upload origin and coerce `www.ansiversa.com` to `ansiversa.com` before building `${origin}/api/media/upload.json` to prevent CORS failures caused by `www` host mismatch.
 - 2026-02-12 Fixed Alpine syntax error in `/app/portfolios/[id]` counters (`Unexpected token '{'`) by replacing `x-text` expressions with plain JS concatenation (`length + ' / ' + max`) for title/slug/profile/about/CTA/description counters in `src/pages/app/portfolios/[id].astro`.
 - 2026-02-12 Fixed Alpine runtime crash on `/app/portfolios/[id]` (`PORTFOLIO_MAX is not defined`) by converting profile/editor counter `x-text` expressions to server-inlined max literals in `src/pages/app/portfolios/[id].astro` so browser expressions no longer reference server constants.

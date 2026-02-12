@@ -69,8 +69,9 @@ const normalizeParentWebOrigin = (value: string) => {
   if (!trimmed) return "";
   try {
     const parsed = new URL(trimmed);
-    if (parsed.hostname.toLowerCase() === "www.ansiversa.com") {
-      parsed.hostname = "ansiversa.com";
+    const host = parsed.hostname.toLowerCase();
+    if (host === "ansiversa.com" || host === "www.ansiversa.com") {
+      parsed.hostname = "www.ansiversa.com";
     }
     return parsed.origin;
   } catch {
