@@ -64,32 +64,7 @@ const sectionOrder = [
 ] as const;
 const yearOptions = getPortfolioYearOptions();
 const monthOptions = PORTFOLIO_MONTH_OPTIONS;
-const normalizeParentWebOrigin = (value: string) => {
-  const trimmed = value.trim().replace(/\/+$/, "");
-  if (!trimmed) return "";
-  try {
-    const parsed = new URL(trimmed);
-    const host = parsed.hostname.toLowerCase();
-    if (host === "ansiversa.com" || host === "www.ansiversa.com") {
-      parsed.hostname = "www.ansiversa.com";
-    }
-    return parsed.origin;
-  } catch {
-    return trimmed;
-  }
-};
-
-const parentWebOrigin = normalizeParentWebOrigin(
-  (
-  import.meta.env.PARENT_WEB_ORIGIN ??
-  import.meta.env.PARENT_APP_URL ??
-  Astro.locals.rootAppUrl ??
-  ""
-  )
-);
-const mediaUploadUrl = parentWebOrigin
-  ? `${parentWebOrigin}/api/media/upload.json`
-  : "/api/media/upload.json";
+const mediaUploadUrl = "/api/media/upload.json";
 ---
 
 <AppShell title={title} description={description}>
