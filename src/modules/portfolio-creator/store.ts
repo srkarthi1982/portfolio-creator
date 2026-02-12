@@ -8,6 +8,7 @@ import type {
   PortfolioSectionKey,
   PortfolioVisibility,
 } from "./types";
+import type { AvMediaUploadResult } from "@ansiversa/components";
 import { TEMPLATE_KEYS, TEMPLATE_OPTIONS, isProTemplate, sectionLabels } from "./helpers";
 import {
   PORTFOLIO_MAX,
@@ -725,6 +726,60 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
       this.bumpPreview();
     } catch (err: any) {
       this.error = err?.message || "Unable to update portfolio.";
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  async saveProfilePhoto(media: AvMediaUploadResult) {
+    if (!this.activeProject?.project?.id) return;
+
+    this.loading = true;
+    this.error = null;
+    this.success = null;
+
+    try {
+      const res = await actions.portfolioCreator.updateProfilePhoto({
+        projectId: this.activeProject.project.id,
+        profilePhotoKey: media.key,
+        profilePhotoUrl: media.url,
+      });
+      const data = this.unwrapResult(res) as { project: PortfolioProjectDTO };
+      if (data?.project) {
+        this.activeProject.project = data.project;
+        this.updateProjectInList(data.project);
+      }
+      this.success = "Profile photo updated.";
+      this.bumpPreview();
+    } catch (err: any) {
+      this.error = err?.message || "Unable to save profile photo.";
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  async removeProfilePhoto() {
+    if (!this.activeProject?.project?.id) return;
+
+    this.loading = true;
+    this.error = null;
+    this.success = null;
+
+    try {
+      const res = await actions.portfolioCreator.updateProfilePhoto({
+        projectId: this.activeProject.project.id,
+        profilePhotoKey: null,
+        profilePhotoUrl: null,
+      });
+      const data = this.unwrapResult(res) as { project: PortfolioProjectDTO };
+      if (data?.project) {
+        this.activeProject.project = data.project;
+        this.updateProjectInList(data.project);
+      }
+      this.success = "Profile photo removed.";
+      this.bumpPreview();
+    } catch (err: any) {
+      this.error = err?.message || "Unable to remove profile photo.";
     } finally {
       this.loading = false;
     }

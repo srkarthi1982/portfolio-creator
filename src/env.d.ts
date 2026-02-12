@@ -19,6 +19,9 @@ interface ImportMetaEnv {
   /** Optional: Parent app URL (fallback to root app URL) */
   readonly PARENT_APP_URL?: string;
 
+  /** Optional: Parent web origin for shared upload APIs (e.g. https://ansiversa.com) */
+  readonly PARENT_WEB_ORIGIN?: string;
+
   /** Optional: Webhook secret for parent app integrations */
   readonly ANSIVERSA_WEBHOOK_SECRET?: string;
 

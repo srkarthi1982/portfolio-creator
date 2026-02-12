@@ -54,6 +54,12 @@ const updateProjectSchema = z
     message: "Provide at least one field to update.",
   });
 
+const updateProfilePhotoSchema = z.object({
+  projectId: z.string().min(1),
+  profilePhotoKey: z.string().trim().min(1).nullable(),
+  profilePhotoUrl: z.string().trim().url().nullable(),
+});
+
 const publishSchema = z.object({
   projectId: z.string().min(1),
   isPublished: z.boolean(),
@@ -717,6 +723,32 @@ export const updateProject = defineAction({
     }
 
     return { project: normalizePortfolioProject(updated) };
+  },
+});
+
+export const updateProfilePhoto = defineAction({
+  input: updateProfilePhotoSchema,
+  async handler({ projectId, profilePhotoKey, profilePhotoUrl }, context: ActionAPIContext) {
+    const user = requireUser(context);
+    await getOwnedProjectWithTemplateAccess(projectId, user.id, user.isPaid);
+
+    const now = new Date();
+    const [project] = await db
+      .update(PortfolioProject)
+      .set({
+        profilePhotoKey: profilePhotoKey ?? null,
+        profilePhotoUrl: profilePhotoUrl ?? null,
+        profilePhotoUpdatedAt: now,
+        updatedAt: now,
+      })
+      .where(eq(PortfolioProject.id, projectId))
+      .returning();
+
+    await pushDashboardActivity(user.id, { event: "portfolio.profile-photo.updated", entityId: projectId });
+
+    return {
+      project: normalizePortfolioProject(project),
+    };
   },
 });
 

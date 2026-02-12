@@ -50,7 +50,10 @@ const formatDateLabel = (value?: string | null) => {
 };
 
 export const buildPortfolioPublicData = (
-  project: Pick<PortfolioProjectDTO, "title" | "slug" | "visibility" | "themeKey" | "publishedAt" | "updatedAt">,
+  project: Pick<
+    PortfolioProjectDTO,
+    "title" | "slug" | "visibility" | "themeKey" | "publishedAt" | "updatedAt" | "profilePhotoUrl"
+  >,
   sections: PortfolioSectionDTO[],
 ): PortfolioPublicData => {
   const templateKey = toTemplateKey(project.themeKey);
@@ -79,6 +82,7 @@ export const buildPortfolioPublicData = (
       headline: clean(data.profile.headline),
       summary: clean(data.about.text),
       location: clean(data.profile.location),
+      profilePhotoUrl: clean(project.profilePhotoUrl),
     },
     contact: {
       email: clean(data.profile.email) || clean(data.contact.email),

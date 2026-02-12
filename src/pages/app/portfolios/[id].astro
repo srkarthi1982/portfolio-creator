@@ -5,6 +5,7 @@ import {
   AvContainer,
   AvDrawer,
   AvEmptyState,
+  AvImageUploader,
   AvInput,
   AvLoading,
   AvSelect,
@@ -63,6 +64,15 @@ const sectionOrder = [
 ] as const;
 const yearOptions = getPortfolioYearOptions();
 const monthOptions = PORTFOLIO_MONTH_OPTIONS;
+const parentWebOrigin = (
+  import.meta.env.PARENT_WEB_ORIGIN ??
+  import.meta.env.PARENT_APP_URL ??
+  Astro.locals.rootAppUrl ??
+  ""
+).replace(/\/+$/, "");
+const mediaUploadUrl = parentWebOrigin
+  ? `${parentWebOrigin}/api/media/upload.json`
+  : "/api/media/upload.json";
 ---
 
 <AppShell title={title} description={description}>
@@ -72,6 +82,7 @@ const monthOptions = PORTFOLIO_MONTH_OPTIONS;
         class="av-auth-stack-lg"
         x-data="$store.portfolioCreator"
         x-init="init && init(JSON.parse($el.dataset.initial))"
+        @av:portfolio-profile-photo-uploaded.window="saveProfilePhoto($event.detail)"
         data-initial={JSON.stringify(initialState)}
       >
         {loadError ? (
@@ -292,6 +303,28 @@ const monthOptions = PORTFOLIO_MONTH_OPTIONS;
 
                 <template x-if="activeSectionKey === 'profile'">
                   <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
+                    <div class="av-auth-stack-xs">
+                      <AvImageUploader
+                        uploadUrl={mediaUploadUrl}
+                        scope="portfolio-profile"
+                        purpose="avatar"
+                        portfolioId={projectId}
+                        label="Profile photo"
+                        helpText="JPG, PNG, or WebP up to 2 MB."
+                        initialUrl={projectData?.project?.profilePhotoUrl ?? null}
+                        onUploadedEventName="av:portfolio-profile-photo-uploaded"
+                      />
+                      <div class="av-row-wrap">
+                        <AvButton
+                          type="button"
+                          variant="ghost"
+                          @click.prevent="removeProfilePhoto()"
+                          :disabled="loading || !activeProject?.project?.profilePhotoUrl"
+                        >
+                          Remove photo
+                        </AvButton>
+                      </div>
+                    </div>
                     <AvInput label="Full name" name="full-name" x-model="formData.fullName" maxlength={PORTFOLIO_MAX.profileFullName} @input={`enforceLimit('fullName', ${PORTFOLIO_MAX.profileFullName})`} required />
                     <p class="av-form-hint" x-text="`${(formData.fullName || '').length} / ${PORTFOLIO_MAX.profileFullName}`"></p>
                     <AvInput label="Headline" name="headline" x-model="formData.headline" maxlength={PORTFOLIO_MAX.profileHeadline} @input={`enforceLimit('headline', ${PORTFOLIO_MAX.profileHeadline})`} />

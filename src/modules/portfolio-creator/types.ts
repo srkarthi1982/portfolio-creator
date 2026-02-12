@@ -20,6 +20,9 @@ export type PortfolioProjectDTO = {
   isPublished: boolean;
   publishedAt: string | null;
   themeKey: string;
+  profilePhotoKey: string | null;
+  profilePhotoUrl: string | null;
+  profilePhotoUpdatedAt: string | null;
   createdAt: string | null;
   updatedAt: string | null;
 };

@@ -29,6 +29,9 @@ export type PortfolioProjectRow = {
   isPublished?: boolean | null;
   publishedAt?: Date | null;
   themeKey: string;
+  profilePhotoKey?: string | null;
+  profilePhotoUrl?: string | null;
+  profilePhotoUpdatedAt?: Date | null;
   createdAt?: Date | null;
   updatedAt?: Date | null;
 };
@@ -88,6 +91,9 @@ export const normalizePortfolioProject = (row: PortfolioProjectRow): PortfolioPr
   isPublished: Boolean(row.isPublished),
   publishedAt: row.publishedAt ? row.publishedAt.toISOString() : null,
   themeKey: row.themeKey,
+  profilePhotoKey: row.profilePhotoKey ?? null,
+  profilePhotoUrl: row.profilePhotoUrl ?? null,
+  profilePhotoUpdatedAt: row.profilePhotoUpdatedAt ? row.profilePhotoUpdatedAt.toISOString() : null,
   createdAt: row.createdAt ? row.createdAt.toISOString() : null,
   updatedAt: row.updatedAt ? row.updatedAt.toISOString() : null,
 });

@@ -10,6 +10,7 @@ import {
   setPublish,
   toggleSection,
   updateItem,
+  updateProfilePhoto,
   updateProject,
 } from "./portfolioCreator";
 
@@ -18,6 +19,7 @@ export const portfolioCreator = {
   createProject,
   getProject,
   updateProject,
+  updateProfilePhoto,
   deleteProject,
   setPublish,
   toggleSection,
