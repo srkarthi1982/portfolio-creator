@@ -95,6 +95,7 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## Task Log (Recent)
 - Keep newest first; include date and short summary.
+- 2026-02-14 Upgraded `@ansiversa/components` to `^0.0.128` (lockfile resolved to `0.0.128`) and verified with `npm run typecheck` (pass; 0 errors, existing 1 hint).
 - 2026-02-12 Updated upload proxy `src/pages/api/media/upload.json.ts` to forward same-site headers (`Origin`/`Referer` set to parent web origin) on server-to-server POST so parent Astro CSRF/origin checks accept multipart upload requests instead of returning `403 Cross-site POST form submissions are forbidden`.
 - 2026-02-12 Replaced browser cross-origin upload call with same-origin proxy route `src/pages/api/media/upload.json.ts` (portfolio-creator -> parent web server-to-server forward with session cookie) and updated editor uploader on `/app/portfolios/[id]` to use local `/api/media/upload.json`, eliminating Astro cross-site POST/CORS 403 failures.
 - 2026-02-12 Corrected parent upload origin normalization in `src/pages/app/portfolios/[id].astro` to canonicalize both `ansiversa.com` and `www.ansiversa.com` to `https://www.ansiversa.com`, fixing browser CORS failures caused by apex->www `307` redirects on `/api/media/upload.json`.
