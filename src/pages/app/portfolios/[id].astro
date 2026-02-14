@@ -1,5 +1,6 @@
 ---
 import {
+  AvAiAssist,
   AvButton,
   AvCard,
   AvContainer,
@@ -418,7 +419,27 @@ const mediaUploadUrl = "/api/media/upload.json";
                     <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
                       <AvInput label="Project name" name="project-name" x-model="formData.name" maxlength={PORTFOLIO_MAX.projectName} @input={`enforceLimit('name', ${PORTFOLIO_MAX.projectName})`} />
                       <AvInput label="Project link" type="url" name="project-link" x-model="formData.link" maxlength={PORTFOLIO_MAX.projectLink} @input={`enforceLimit('link', ${PORTFOLIO_MAX.projectLink})`} />
-                      <AvTextarea label="Description" name="project-description" rows={3} x-model="formData.description" maxlength={PORTFOLIO_MAX.projectDescription} @input={`enforceLimit('description', ${PORTFOLIO_MAX.projectDescription})`} />
+                      <div class="av-row-between av-portfolio-ai-header">
+                        <label class="av-label" for="project-description">Description</label>
+                        <AvAiAssist
+                          featureKey="portfolio.project_summary_suggestions"
+                          value=""
+                          minChars={30}
+                          maxChars={1500}
+                          label="AI"
+                          valueSourceSelector="#project-description"
+                          onAppendEvent="av:ai-append"
+                          onReplaceEvent="av:ai-replace"
+                        />
+                      </div>
+                      <AvTextarea
+                        id="project-description"
+                        name="project-description"
+                        rows={3}
+                        x-model="formData.description"
+                        maxlength={PORTFOLIO_MAX.projectDescription}
+                        @input={`enforceLimit('description', ${PORTFOLIO_MAX.projectDescription})`}
+                      />
                       <p class="av-form-hint" x-text={`(formData.description || '').length + ' / ' + ${PORTFOLIO_MAX.projectDescription}`}></p>
                       <div class="av-portfolio-date-grid">
                         <AvSelect label="Start year" name="project-start-year" x-model="formData.startYear">

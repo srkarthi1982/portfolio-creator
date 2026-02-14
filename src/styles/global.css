@@ -130,6 +130,23 @@
   flex-wrap: wrap;
 }
 
+.av-portfolio-ai-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
+}
+
+.av-portfolio-ai-header .av-label {
+  min-width: 0;
+}
+
+.av-portfolio-ai-header .av-ai-assist {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .av-portfolio-preview {
   display: grid;
   gap: 24px;

@@ -411,6 +411,8 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
     themeKey: DEFAULT_TEMPLATE_KEY,
   };
   pendingDeleteId: string | null = null;
+  private aiAppendListener: ((event: Event) => void) | null = null;
+  private aiReplaceListener: ((event: Event) => void) | null = null;
 
   init(initial?: Partial<ReturnType<typeof defaultState>>) {
     if (!initial) return;
@@ -432,6 +434,8 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
         themeKey: (this.activeProject.project.themeKey ?? DEFAULT_TEMPLATE_KEY) as TemplateKey,
       };
     }
+
+    this.bindAiAssistEvents();
   }
 
   get sectionKeys() {
@@ -851,6 +855,47 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
     this.drawerOpen = false;
     this.editingItemId = null;
     this.warning = null;
+  }
+
+  private bindAiAssistEvents() {
+    if (typeof window === "undefined") return;
+
+    if (this.aiAppendListener) {
+      window.removeEventListener("av:ai-append", this.aiAppendListener as EventListener);
+    }
+    if (this.aiReplaceListener) {
+      window.removeEventListener("av:ai-replace", this.aiReplaceListener as EventListener);
+    }
+
+    this.aiAppendListener = (event: Event) => {
+      const suggestion = this.readAiSuggestion(event);
+      if (!suggestion) return;
+      this.applyFeaturedProjectSuggestion("append", suggestion);
+    };
+
+    this.aiReplaceListener = (event: Event) => {
+      const suggestion = this.readAiSuggestion(event);
+      if (!suggestion) return;
+      this.applyFeaturedProjectSuggestion("replace", suggestion);
+    };
+
+    window.addEventListener("av:ai-append", this.aiAppendListener as EventListener);
+    window.addEventListener("av:ai-replace", this.aiReplaceListener as EventListener);
+  }
+
+  private readAiSuggestion(event: Event) {
+    const detailText = (event as CustomEvent<{ text?: unknown }>).detail?.text;
+    return normalizeText(typeof detailText === "string" ? detailText : "");
+  }
+
+  private applyFeaturedProjectSuggestion(mode: "append" | "replace", suggestion: string) {
+    if (this.activeSectionKey !== "featuredProjects") return;
+    const current = normalizeText(this.formData?.description);
+    const nextValue =
+      mode === "replace"
+        ? suggestion
+        : `${current}${current ? "\n" : ""}${suggestion}`;
+    this.formData.description = nextValue.slice(0, PORTFOLIO_MAX.projectDescription);
   }
 
   editItem(item: PortfolioItemDTO) {

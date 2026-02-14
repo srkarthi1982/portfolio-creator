@@ -18,6 +18,8 @@ interface ImportMetaEnv {
 
   /** Optional: Parent app URL (fallback to root app URL) */
   readonly PARENT_APP_URL?: string;
+  readonly WEB_ORIGIN?: string;
+  readonly PUBLIC_WEB_ORIGIN?: string;
 
   /** Optional: Parent web origin for shared upload APIs (e.g. https://ansiversa.com) */
   readonly PARENT_WEB_ORIGIN?: string;
