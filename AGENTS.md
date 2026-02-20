@@ -95,6 +95,7 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 
 ## Task Log (Recent)
 - Keep newest first; include date and short summary.
+- 2026-02-20 Portfolio Creator Bookmarks V1 shipped end-to-end: added DB `Bookmark` table (unique userId+entityType+entityId), wired in DB config, added actions `listBookmarks` + `toggleBookmark`, added optimistic bookmark state methods in portfolio Alpine store, added `AvBookmarkButton` to `/app/portfolios` cards, added `/bookmarks` page using `AvBookmarksEmpty` + `AvBookmarksList`, and enabled gated 3-dot menu Bookmarks item via `bookmarksHref="/bookmarks"` in AppShell; bumped `@ansiversa/components` to exact `0.0.142`. Verification: `npm run db:push` ✅, `npm run typecheck` ✅, `npm run build` ✅. Production checks: bookmark persists after refresh, `/bookmarks` list links to `/app/portfolios/{id}`, unbookmark reflects after refresh, and only apps passing `bookmarksHref` show Bookmarks menu item.
 - 2026-02-19 Bumped `/components` to `0.0.141` and refreshed lockfile for latest shared FAQ order-arrow release; verification: `npm run build` ✅.
 - 2026-02-19 Bumped `/components` to `0.0.140` and refreshed lockfile to consume the latest shared release; verification: `npm run build` ✅.
 - 2026-02-19 Bumped `@ansiversa/components` to `0.0.139` (AvMiniAppBar AppLogo support) and verified with `npm run build` (pass).

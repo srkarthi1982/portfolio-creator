@@ -1,5 +1,6 @@
 ---
 import {
+  AvBookmarkButton,
   AvButton,
   AvCard,
   AvConfirmDialog,
@@ -20,6 +21,11 @@ const isPaid = Astro.locals.user?.isPaid === true;
 const listResult = await Astro.callAction(actions.portfolioCreator.listProjects, {});
 const data = (listResult as any)?.data ?? (listResult as any) ?? {};
 const projects = (data?.items ?? []) as PortfolioProjectDTO[];
+const bookmarksResult = await Astro.callAction(actions.portfolioCreator.listBookmarks, {});
+const bookmarkData = (bookmarksResult as any)?.data ?? (bookmarksResult as any) ?? {};
+const bookmarkedEntityIds = Array.isArray(bookmarkData?.items)
+  ? bookmarkData.items.map((item: any) => String(item.entityId))
+  : [];
 
 const initialState = {
   projects,
@@ -30,6 +36,7 @@ const initialState = {
     themeKey: TEMPLATE_OPTIONS[0].key,
   },
   pendingDeleteId: null,
+  bookmarkedEntityIds,
 };
 ---
 
@@ -118,9 +125,19 @@ const initialState = {
                     <div class="av-auth-stack-xxs">
                       <div class="av-row-between">
                         <h3 class="av-card-heading" x-text="project.title"></h3>
-                        <template x-if="project.isPublished">
-                          <span class="av-badge av-badge-soft">Published</span>
-                        </template>
+                        <div class="av-row-wrap">
+                          <template x-if="project.isPublished">
+                            <span class="av-badge av-badge-soft">Published</span>
+                          </template>
+                          <AvBookmarkButton
+                            active={false}
+                            activeExpr="isBookmarked(project.id)"
+                            title="Save bookmark"
+                            activeTitle="Remove bookmark"
+                            onClick="toggleBookmark(project.id, project.title)"
+                            size="sm"
+                          />
+                        </div>
                       </div>
                       <div class="av-portfolio-meta">
                         <span x-text="`/${project.slug}`"></span>

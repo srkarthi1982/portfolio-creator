@@ -66,9 +66,37 @@ export const Faq = defineTable({
   ],
 });
 
+export const Bookmark = defineTable({
+  columns: {
+    id: column.number({ primaryKey: true, autoIncrement: true }),
+    userId: column.text(),
+    entityType: column.text(),
+    entityId: column.text(),
+    label: column.text(),
+    meta: column.text({ optional: true }),
+    createdAt: column.date({ default: NOW }),
+  },
+  indexes: [
+    {
+      name: "bookmark_user_entity_unique",
+      on: ["userId", "entityType", "entityId"],
+      unique: true,
+    },
+    {
+      name: "bookmark_user_idx",
+      on: "userId",
+    },
+    {
+      name: "bookmark_entity_type_idx",
+      on: "entityType",
+    },
+  ],
+});
+
 export const portfolioTables = {
   PortfolioProject,
   PortfolioSection,
   PortfolioItem,
   Faq,
+  Bookmark,
 } as const;

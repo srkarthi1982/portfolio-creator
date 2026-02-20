@@ -1,0 +1,82 @@
+---
+import { actions } from "astro:actions";
+import {
+  AvBookmarksEmpty,
+  AvBookmarksList,
+  AvBreadcrumb,
+  AvContainer,
+  AvPageHeader,
+} from "@ansiversa/components";
+import AppShell from "../layouts/AppShell.astro";
+
+const user = Astro.locals.user;
+const rootAppUrl = Astro.locals.rootAppUrl ?? "https://ansiversa.com";
+
+if (!user) {
+  const loginUrl = new URL("/login", rootAppUrl);
+  loginUrl.searchParams.set("returnTo", Astro.url.toString());
+  return Astro.redirect(loginUrl.toString());
+}
+
+const listResult = await Astro.callAction(actions.portfolioCreator.listBookmarks, {});
+const bookmarkData = (listResult as any)?.data ?? listResult ?? {};
+const items = Array.isArray(bookmarkData?.items) ? bookmarkData.items : [];
+
+const bookmarkListItems = items.map((item: any) => ({
+  title: item.projectTitle || item.label || "Untitled portfolio",
+  subtitle: item.projectUpdatedAt
+    ? `Updated ${new Date(item.projectUpdatedAt).toLocaleDateString()}`
+    : "Update date unavailable",
+  href: `/app/portfolios/${item.projectId}`,
+  rightSlot: {
+    active: true,
+    activeExpr: "true",
+    title: "Save bookmark",
+    activeTitle: "Remove bookmark",
+    size: "sm" as const,
+    onClick: `toggleBookmarkItem('${String(item.projectId).replace(/'/g, "\\'")}', ${JSON.stringify(item.projectTitle || item.label || "Untitled portfolio")})`,
+  },
+}));
+
+const title = "Bookmarks - Portfolio Creator";
+const description = "Saved in Portfolio Creator";
+---
+
+<AppShell title={title} description={description}>
+  <section class="av-faq-public__crumb">
+    <AvContainer size="default">
+      <AvBreadcrumb
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Bookmarks" },
+        ]}
+      />
+    </AvContainer>
+  </section>
+
+  <AvPageHeader title="Bookmarks" description="Saved in Portfolio Creator" />
+
+  <section class="av-section">
+    <AvContainer>
+      <div
+        x-data="{
+          busy: false,
+          async toggleBookmarkItem(projectId, label) {
+            if (this.busy) return;
+            this.busy = true;
+            try {
+              await $store.portfolioCreator.toggleBookmark(String(projectId), label || '');
+              window.location.reload();
+            } catch (err) {
+              console.error(err);
+            } finally {
+              this.busy = false;
+            }
+          }
+        }"
+      >
+        {items.length === 0 ? <AvBookmarksEmpty /> : <AvBookmarksList items={bookmarkListItems} />}
+      </div>
+    </AvContainer>
+  </section>
+</AppShell>

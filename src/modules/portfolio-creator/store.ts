@@ -50,6 +50,7 @@ const defaultState = () => ({
     themeKey: DEFAULT_TEMPLATE_KEY,
   },
   pendingDeleteId: null as string | null,
+  bookmarkedEntityIds: [] as string[],
 });
 
 const normalizeText = (value?: string | null) => {
@@ -411,6 +412,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
     themeKey: DEFAULT_TEMPLATE_KEY,
   };
   pendingDeleteId: string | null = null;
+  bookmarkedEntityIds: string[] = [];
   private aiAppendListener: ((event: Event) => void) | null = null;
   private aiReplaceListener: ((event: Event) => void) | null = null;
 
@@ -423,6 +425,9 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
       title: initial.newProject?.title ?? "",
       themeKey: (initial.newProject?.themeKey ?? DEFAULT_TEMPLATE_KEY) as TemplateKey,
     };
+    this.bookmarkedEntityIds = Array.isArray(initial.bookmarkedEntityIds)
+      ? initial.bookmarkedEntityIds.map((id) => String(id))
+      : [];
     this.isPaid = Boolean(initial.isPaid);
 
     if (this.activeProject?.project) {
@@ -562,6 +567,43 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
   private bumpPreview() {
     const now = Date.now();
     this.previewBuster = now === this.previewBuster ? now + 1 : now;
+  }
+
+  isBookmarked(entityId: string) {
+    const key = String(entityId);
+    return this.bookmarkedEntityIds.includes(key);
+  }
+
+  private setBookmarkState(entityId: string, isSaved: boolean) {
+    const key = String(entityId);
+    if (isSaved) {
+      if (!this.bookmarkedEntityIds.includes(key)) {
+        this.bookmarkedEntityIds = [...this.bookmarkedEntityIds, key];
+      }
+      return;
+    }
+    this.bookmarkedEntityIds = this.bookmarkedEntityIds.filter((item) => item !== key);
+  }
+
+  async toggleBookmark(entityId: string, label?: string) {
+    const key = String(entityId);
+    if (!key) return;
+
+    const wasSaved = this.isBookmarked(key);
+    this.setBookmarkState(key, !wasSaved);
+
+    try {
+      const res = await actions.portfolioCreator.toggleBookmark({
+        entityType: "portfolio",
+        entityId: key,
+        label: normalizeText(label || "") || "Untitled portfolio",
+      });
+      const data = this.unwrapResult(res) as { saved?: boolean };
+      this.setBookmarkState(key, Boolean(data?.saved));
+    } catch (err: any) {
+      this.setBookmarkState(key, wasSaved);
+      this.error = err?.message || "Failed to update bookmark.";
+    }
   }
 
   private unwrapResult<T = any>(result: any): T {

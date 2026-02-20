@@ -13,6 +13,7 @@ import {
   updateProfilePhoto,
   updateProject,
 } from "./portfolioCreator";
+import { listBookmarks, toggleBookmark } from "./bookmarks";
 
 export const portfolioCreator = {
   listProjects,
@@ -28,6 +29,8 @@ export const portfolioCreator = {
   updateItem,
   deleteItem,
   reorderItems,
+  listBookmarks,
+  toggleBookmark,
 };
 
 export const server = {

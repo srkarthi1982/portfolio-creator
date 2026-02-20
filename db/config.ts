@@ -1,5 +1,5 @@
 import { defineDb } from "astro:db";
-import { Faq, PortfolioItem, PortfolioProject, PortfolioSection } from "./tables";
+import { Bookmark, Faq, PortfolioItem, PortfolioProject, PortfolioSection } from "./tables";
 
 export default defineDb({
   tables: {
@@ -7,5 +7,6 @@ export default defineDb({
     PortfolioSection,
     PortfolioItem,
     Faq,
+    Bookmark,
   },
 });
