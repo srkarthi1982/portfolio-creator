@@ -170,7 +170,7 @@ const initialState = {
                         variant="ghost"
                         size="sm"
                         type="button"
-                        @click.prevent="pendingDeleteId = project.id; pendingDeleteName = project.title || null; window.AvDialog?.open('portfolio-delete-dialog')"
+                        @click.prevent="pendingDeleteId = project.id; pendingDeleteName = project.title || null; const dialogTitle = document.getElementById('portfolio-delete-dialog-title'); if (dialogTitle) dialogTitle.textContent = pendingDeleteName ? `Delete portfolio '${pendingDeleteName}'?` : 'Delete this item?'; window.AvDialog?.open('portfolio-delete-dialog')"
                         :disabled="loading"
                       >
                         Delete
@@ -185,7 +185,7 @@ const initialState = {
 
         <AvConfirmDialog
           id="portfolio-delete-dialog"
-          :headline="pendingDeleteName ? `Delete portfolio '${pendingDeleteName}'?` : 'Delete this item?'"
+          headline="Delete this item?"
           description="This action cannot be undone."
           confirmLabel="Delete"
           cancelLabel="Cancel"
