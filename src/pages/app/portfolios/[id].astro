@@ -422,13 +422,12 @@ const mediaUploadUrl = "/api/media/upload.json";
                       <div class="av-row-between av-portfolio-ai-header">
                         <label class="av-label" for="project-description">Description</label>
                         <AvAiAssist
-                          featureKey="portfolio.project_summary_suggestions"
-                          value=""
-                          minChars={30}
-                          maxChars={1500}
+                          mode="rewrite"
+                          text=""
+                          maxChars={PORTFOLIO_MAX.projectDescription}
+                          rewriteField="generic"
                           label="AI"
                           valueSourceSelector="#project-description"
-                          onAppendEvent="av:ai-append"
                           onReplaceEvent="av:ai-replace"
                         />
                       </div>

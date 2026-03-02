@@ -94,6 +94,7 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 - 2026-01-29 Smoke test: not run (manual create/publish portfolio).
 
 ## Task Log (Recent)
+- 2026-03-02 Switched existing AI-integrated Description field in `src/pages/app/portfolios/[id].astro` from suggestions to rewrite flow via `<AvAiAssist mode=\"rewrite\" rewriteField=\"generic\" maxChars={PORTFOLIO_MAX.projectDescription} onReplaceEvent=\"av:ai-replace\" />`, preserving single-field scope and replace-based store update behavior. Dependency bumped to `@ansiversa/components@^0.0.167` (`package.json` + lockfile). Verification: `npm run typecheck` ✅ (0 errors, existing hint), `npm run build` ✅.
 - 2026-03-01 Live-app shared UI sync: upgraded `@ansiversa/components` to `^0.0.163` (or confirmed already aligned in `web`) and refreshed install state for this repo. Verification: `npm run build` ✅.
 - Keep newest first; include date and short summary.
 - 2026-02-27 Middleware Standard V1 normalization: added config-driven middleware (`src/lib/middlewareConfig.ts` + shared `src/middleware.ts`) with standardized invariants (identical static asset bypass list, production `ANSIVERSA_COOKIE_DOMAIN` enforcement, ordered middleware flow, safe numeric admin role check, DEV-only bypass gate). Preserved portfolio-creator public/private behavior using `protectPrefixes` with `['/app','/admin']` so public slug routes remain public. Updated `.env.example` with routing and standardized `DEV_BYPASS_*` contract. Verification: `npm run typecheck` ✅, `npm run build` ✅.
