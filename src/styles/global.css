@@ -295,3 +295,32 @@
     width: 100%;
   }
 }
+
+
+.av-portfolio-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.av-portfolio-card-actions :where(button, a) {
+  min-width: 2.25rem;
+  width: 2.25rem;
+  padding-inline: 0;
+  justify-content: center;
+}
+
+.av-portfolio-drawer-body {
+  min-height: 0;
+}
+
+.av-portfolio-drawer-body textarea {
+  resize: vertical;
+  overflow: auto;
+}
+
+.av-portfolio-drawer-footer--flat {
+  position: static;
+  border-top: 0;
+  padding-top: 0;
+}

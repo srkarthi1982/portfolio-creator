@@ -13,6 +13,7 @@ import { TEMPLATE_KEYS, TEMPLATE_OPTIONS, isProTemplate, sectionLabels } from ".
 import {
   PORTFOLIO_MAX,
   PORTFOLIO_MONTH_OPTIONS,
+  PORTFOLIO_SECTION_ORDER,
   getPortfolioYearOptions,
 } from "./constraints";
 
@@ -31,6 +32,8 @@ const defaultState = () => ({
   warning: null as string | null,
   success: null as string | null,
   drawerOpen: false,
+  settingsDrawerOpen: false,
+  createDrawerOpen: false,
   activeSectionKey: null as PortfolioSectionKey | null,
   editingItemId: null as string | null,
   formData: {} as Record<string, any>,
@@ -394,6 +397,8 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
   warning: string | null = null;
   success: string | null = null;
   drawerOpen = false;
+  settingsDrawerOpen = false;
+  createDrawerOpen = false;
   activeSectionKey: PortfolioSectionKey | null = null;
   editingItemId: string | null = null;
   formData: Record<string, any> = {};
@@ -680,7 +685,11 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
         this.newProject = { title: "", themeKey };
       }
       this.success = "Portfolio created.";
+      this.createDrawerOpen = false;
       this.bumpPreview();
+      if (typeof window !== "undefined" && data?.project?.id) {
+        window.location.assign(`/app/portfolios/${data.project.id}`);
+      }
     } catch (err: any) {
       this.error = err?.message || "Unable to create portfolio.";
     } finally {
@@ -769,6 +778,9 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
         };
       }
       this.success = "Portfolio updated.";
+      if (this.settingsDrawerOpen) {
+        this.settingsDrawerOpen = false;
+      }
       this.bumpPreview();
     } catch (err: any) {
       this.error = err?.message || "Unable to update portfolio.";
@@ -884,6 +896,7 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
   }
 
   openSection(key: PortfolioSectionKey) {
+    this.settingsDrawerOpen = false;
     this.activeSectionKey = key;
     this.drawerOpen = true;
     this.editingItemId = null;
@@ -895,8 +908,40 @@ export class PortfolioCreatorStore extends AvBaseStore implements ReturnType<typ
 
   closeDrawer() {
     this.drawerOpen = false;
+    this.settingsDrawerOpen = false;
+    this.createDrawerOpen = false;
     this.editingItemId = null;
     this.warning = null;
+  }
+
+  openSettingsDrawer() {
+    this.drawerOpen = false;
+    this.settingsDrawerOpen = true;
+    this.error = null;
+    this.success = null;
+    this.warning = null;
+    this.paywallMessage = null;
+  }
+
+  openCreateDrawer() {
+    this.createDrawerOpen = true;
+    this.error = null;
+    this.success = null;
+    this.warning = null;
+    this.paywallMessage = null;
+  }
+
+  async saveAndNextSection() {
+    if (!this.activeSectionKey) return;
+    const currentIndex = PORTFOLIO_SECTION_ORDER.indexOf(this.activeSectionKey);
+    if (currentIndex < 0 || currentIndex >= PORTFOLIO_SECTION_ORDER.length - 1) {
+      await this.saveActiveSection();
+      return;
+    }
+    await this.saveActiveSection();
+    if (this.error || this.paywallMessage) return;
+    const nextSection = PORTFOLIO_SECTION_ORDER[currentIndex + 1];
+    this.openSection(nextSection);
   }
 
   private bindAiAssistEvents() {
