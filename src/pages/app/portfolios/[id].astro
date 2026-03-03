@@ -13,6 +13,7 @@ import {
   AvTextarea,
 } from "@ansiversa/components";
 import { actions } from "astro:actions";
+import PortfolioEditorDrawer from "../../../components/PortfolioEditorDrawer.astro";
 import AppShell from "../../../layouts/AppShell.astro";
 import type { PortfolioProjectDetail } from "../../../modules/portfolio-creator/types";
 import { TEMPLATE_OPTIONS, sectionLabels } from "../../../modules/portfolio-creator/helpers";
@@ -298,14 +299,11 @@ const mediaUploadUrl = "/api/media/upload.json";
             @close-drawer="closeDrawer()"
             x-cloak
           >
-            <AvDrawer title="Edit section" description="Update section content and save.">
+            <PortfolioEditorDrawer
+              titleExpr="`Edit ${getSectionLabel(activeSectionKey)}`"
+              descriptionExpr="'Save to refresh the preview.'"
+            >
               <div class="av-auth-stack-md av-portfolio-drawer-body">
-                <div class="av-auth-stack-xs">
-                  <p class="av-kicker" x-text="getSectionLabel(activeSectionKey)"></p>
-                  <h2 class="av-card-heading" x-text="`Edit ${getSectionLabel(activeSectionKey)}`"></h2>
-                  <p class="av-text-soft" x-text="editingItemId ? 'Update and save changes.' : 'Save to refresh the preview.'"></p>
-                </div>
-
                 <template x-if="activeSectionKey === 'profile'">
                   <form class="av-auth-stack-sm" @submit.prevent="saveActiveSection()">
                     <div class="av-auth-stack-xs">
@@ -667,14 +665,14 @@ const mediaUploadUrl = "/api/media/upload.json";
 
                 <template x-if="activeSectionKey && activeSection">
                   <div class="av-portfolio-drawer-footer">
-                    <div class="av-portfolio-drawer-footer__action" x-show="!['featuredProjects', 'experience', 'education', 'certifications', 'achievements'].includes(activeSectionKey)">
+                    <div class="av-portfolio-drawer-footer__action">
                       <AvButton type="button" @click.prevent="saveActiveSection()" :disabled="loading">
-                        <span x-text="`Save ${getSectionLabel(activeSectionKey).toLowerCase()}`"></span>
+                        <span>Save</span>
                       </AvButton>
                     </div>
-                    <div class="av-portfolio-drawer-footer__action">
+                    <div class="av-portfolio-drawer-footer__action" x-show="activeSectionKey !== 'contact'">
                       <AvButton type="button" variant="ghost" @click.prevent="saveAndNextSection()" :disabled="loading" title="Save current section and continue to the next">
-                        <span x-text="activeSectionKey === 'contact' ? 'Save' : 'Save & Next'"></span>
+                        <span>Save & Next</span>
                       </AvButton>
                     </div>
                     <div class="av-portfolio-drawer-footer__action">
@@ -693,7 +691,7 @@ const mediaUploadUrl = "/api/media/upload.json";
                   </div>
                 </template>
               </div>
-            </AvDrawer>
+            </PortfolioEditorDrawer>
           </div>
         </template>
       </div>
