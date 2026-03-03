@@ -7,6 +7,18 @@ export const getPortfolioYearOptions = () => {
   return Array.from({ length: max - PORTFOLIO_YEAR_MIN + 1 }, (_, index) => max - index);
 };
 
+export const PORTFOLIO_SECTION_ORDER = [
+  "profile",
+  "about",
+  "featuredProjects",
+  "experience",
+  "skills",
+  "education",
+  "certifications",
+  "achievements",
+  "contact",
+] as const;
+
 export const PORTFOLIO_MONTH_OPTIONS = [
   { value: 1, label: "Jan" },
   { value: 2, label: "Feb" },

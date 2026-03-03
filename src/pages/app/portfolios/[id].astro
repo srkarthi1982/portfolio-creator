@@ -20,6 +20,7 @@ import {
   PORTFOLIO_LIMITS,
   PORTFOLIO_MAX,
   PORTFOLIO_MONTH_OPTIONS,
+  PORTFOLIO_SECTION_ORDER,
   getPortfolioYearOptions,
 } from "../../../modules/portfolio-creator/constraints";
 
@@ -52,17 +53,7 @@ const initialState = {
   templateOptions: TEMPLATE_OPTIONS,
 };
 
-const sectionOrder = [
-  "profile",
-  "about",
-  "featuredProjects",
-  "experience",
-  "skills",
-  "education",
-  "certifications",
-  "achievements",
-  "contact",
-] as const;
+
 const yearOptions = getPortfolioYearOptions();
 const monthOptions = PORTFOLIO_MONTH_OPTIONS;
 const mediaUploadUrl = "/api/media/upload.json";
@@ -96,83 +87,28 @@ const mediaUploadUrl = "/api/media/upload.json";
                   <p class="av-text-soft">Update details, manage sections, and preview the public page.</p>
                 </div>
 
-                <form class="av-auth-stack-sm" @submit.prevent="saveProjectMeta()">
-                  <div class="av-portfolio-form-grid">
-                    <AvInput
-                      label="Portfolio title"
-                      name="portfolio-title"
-                      placeholder="Portfolio name"
-                      x-model="projectMeta.title"
-                      maxlength={PORTFOLIO_MAX.projectTitle}
-                      required
-                    />
-                    <p class="av-form-hint" x-text={`(projectMeta.title || '').length + ' / ' + ${PORTFOLIO_MAX.projectTitle}`}></p>
-                    <AvInput
-                      label="Slug"
-                      name="portfolio-slug"
-                      placeholder="your-name"
-                      x-model="projectMeta.slug"
-                      maxlength={PORTFOLIO_MAX.slug}
-                      required
-                    />
-                    <p class="av-form-hint" x-text={`(projectMeta.slug || '').length + ' / ' + ${PORTFOLIO_MAX.slug}`}></p>
-                    <AvSelect
-                      label="Visibility"
-                      name="portfolio-visibility"
-                      x-model="projectMeta.visibility"
-                    >
-                      <option value="public">Public</option>
-                      <option value="unlisted">Unlisted</option>
-                      <option value="private">Private</option>
-                    </AvSelect>
-                  </div>
-                  <div class="av-portfolio-template-grid">
-                    <template x-for="template in templateOptions" :key="template.key">
-                      <button
-                        class="av-portfolio-template-card"
-                        :class="projectMeta.themeKey === template.key ? 'is-selected' : ''"
-                        type="button"
-                        @click.prevent="selectProjectTemplate(template.key)"
-                        :disabled="isTemplateLocked(template.key)"
-                      >
-                        <div class="av-row-between">
-                          <p class="av-card-heading" x-text="template.label"></p>
-                          <span class="av-badge av-badge-soft" x-show="template.tier === 'pro' && !isPaid" x-cloak>Pro</span>
-                        </div>
-                        <p class="av-text-soft" x-text="template.tier === 'pro' ? 'Included in Pro' : 'Free access'"></p>
-                      </button>
-                    </template>
-                  </div>
-                  <div class="av-row-wrap" x-show="paywallMessage" x-cloak>
-                    <p class="av-text-soft av-m-0" x-text="paywallMessage"></p>
-                    <AvButton href="https://ansiversa.com/pricing" variant="ghost" size="sm">
-                      View pricing
-                    </AvButton>
-                  </div>
-
-                  <div class="av-row-wrap av-portfolio-actions-row">
-                    <p
-                      class="av-portfolio-visibility-indicator"
-                      x-bind:title="`Visibility is ${projectMeta.visibility}`"
-                      x-text="`Visibility: ${projectMeta.visibility === 'private' ? 'Private 🔒' : projectMeta.visibility === 'unlisted' ? 'Unlisted 🔗' : 'Public 🌐'}`"
-                    ></p>
-                    <AvButton type="submit" :disabled="loading">Save details</AvButton>
-                    <AvButton type="button" variant="ghost" @click.prevent="togglePublish()" :disabled="loading">
-                      <span x-text="projectMeta.isPublished ? 'Unpublish' : 'Publish'"></span>
-                    </AvButton>
-                    <AvButton
-                      type="button"
-                      variant="ghost"
-                      href="#"
-                      x-bind:href="projectMeta.visibility === 'private' ? `/app/portfolios/${activeProjectId}/preview` : (projectMeta.slug ? `/${projectMeta.slug}` : '#')"
-                      target="_blank"
-                      :disabled="projectMeta.visibility !== 'private' && !projectMeta.slug"
-                      x-bind:title="projectMeta.visibility !== 'private' && !projectMeta.slug ? 'Set a slug to view public' : ''"
-                    >
-                      <span x-text="projectMeta.visibility === 'private' ? 'Preview' : (projectMeta.visibility === 'unlisted' ? 'View link' : 'View public')"></span>
-                    </AvButton>
-                  </div>
-                </form>
+                <div class="av-row-wrap av-portfolio-actions-row">
+                  <p
+                    class="av-portfolio-visibility-indicator"
+                    x-bind:title="`Visibility is ${projectMeta.visibility}`"
+                    x-text="`Visibility: ${projectMeta.visibility === 'private' ? 'Private 🔒' : projectMeta.visibility === 'unlisted' ? 'Unlisted 🔗' : 'Public 🌐'}`"
+                  ></p>
+                  <AvButton type="button" @click.prevent="openSettingsDrawer()">Settings</AvButton>
+                  <AvButton type="button" variant="ghost" @click.prevent="togglePublish()" :disabled="loading">
+                    <span x-text="projectMeta.isPublished ? 'Unpublish' : 'Publish'"></span>
+                  </AvButton>
+                  <AvButton
+                    type="button"
+                    variant="ghost"
+                    href="#"
+                    x-bind:href="projectMeta.visibility === 'private' ? `/app/portfolios/${activeProjectId}/preview` : (projectMeta.slug ? `/${projectMeta.slug}` : '#')"
+                    target="_blank"
+                    :disabled="projectMeta.visibility !== 'private' && !projectMeta.slug"
+                    x-bind:title="projectMeta.visibility !== 'private' && !projectMeta.slug ? 'Set a slug to view public' : ''"
+                  >
+                    <span x-text="projectMeta.visibility === 'private' ? 'Preview' : (projectMeta.visibility === 'unlisted' ? 'View link' : 'View public')"></span>
+                  </AvButton>
+                </div>
               </div>
             </AvCard>
 
@@ -184,7 +120,7 @@ const mediaUploadUrl = "/api/media/upload.json";
                     <p class="av-text-soft">Open a section to edit its content.</p>
                   </div>
                   <div class="av-portfolio-section-list">
-                    {sectionOrder.map((key) => (
+                    {PORTFOLIO_SECTION_ORDER.map((key) => (
                       <button
                         type="button"
                         class="av-portfolio-section-button"
@@ -279,6 +215,81 @@ const mediaUploadUrl = "/api/media/upload.json";
 
         <AvLoading x-show="loading" x-cloak label="Saving…" />
 
+        <template x-if="settingsDrawerOpen">
+          <div
+            class="av-drawer-overlay"
+            @click.self="closeDrawer()"
+            @keydown.escape.window="closeDrawer()"
+            @close-drawer="closeDrawer()"
+            x-cloak
+          >
+            <AvDrawer title="Settings" description="Update project details, theme, and visibility.">
+              <div class="av-auth-stack-sm av-portfolio-drawer-body">
+                <div class="av-portfolio-form-grid">
+                  <AvInput
+                    label="Portfolio title"
+                    name="portfolio-title"
+                    placeholder="Portfolio name"
+                    x-model="projectMeta.title"
+                    maxlength={PORTFOLIO_MAX.projectTitle}
+                    required
+                  />
+                  <p class="av-form-hint" x-text={`(projectMeta.title || '').length + ' / ' + ${PORTFOLIO_MAX.projectTitle}`}></p>
+                  <AvInput
+                    label="Slug"
+                    name="portfolio-slug"
+                    placeholder="your-name"
+                    x-model="projectMeta.slug"
+                    maxlength={PORTFOLIO_MAX.slug}
+                    required
+                  />
+                  <p class="av-form-hint" x-text={`(projectMeta.slug || '').length + ' / ' + ${PORTFOLIO_MAX.slug}`}></p>
+                  <AvSelect
+                    label="Visibility"
+                    name="portfolio-visibility"
+                    x-model="projectMeta.visibility"
+                  >
+                    <option value="public">Public</option>
+                    <option value="unlisted">Unlisted</option>
+                    <option value="private">Private</option>
+                  </AvSelect>
+                </div>
+                <div class="av-portfolio-template-grid">
+                  <template x-for="template in templateOptions" :key="template.key">
+                    <button
+                      class="av-portfolio-template-card"
+                      :class="projectMeta.themeKey === template.key ? 'is-selected' : ''"
+                      type="button"
+                      @click.prevent="selectProjectTemplate(template.key)"
+                      :disabled="isTemplateLocked(template.key)"
+                    >
+                      <div class="av-row-between">
+                        <p class="av-card-heading" x-text="template.label"></p>
+                        <span class="av-badge av-badge-soft" x-show="template.tier === 'pro' && !isPaid" x-cloak>Pro</span>
+                      </div>
+                      <p class="av-text-soft" x-text="template.tier === 'pro' ? 'Included in Pro' : 'Free access'"></p>
+                    </button>
+                  </template>
+                </div>
+              </div>
+              <Fragment slot="footer">
+                <div class="av-portfolio-drawer-footer av-portfolio-drawer-footer--flat">
+                  <template x-if="error">
+                    <div class="av-alert av-alert-danger" role="status" x-text="error"></div>
+                  </template>
+                  <template x-if="paywallMessage">
+                    <div class="av-alert av-alert-warning" role="status" x-text="paywallMessage"></div>
+                  </template>
+                  <div class="av-row-wrap">
+                    <AvButton type="button" @click.prevent="saveProjectMeta()" :disabled="loading" x-text="loading ? 'Saving…' : 'Save'"></AvButton>
+                    <AvButton type="button" variant="ghost" @click.prevent="closeDrawer()" :disabled="loading">Close</AvButton>
+                  </div>
+                </div>
+              </Fragment>
+            </AvDrawer>
+          </div>
+        </template>
+
         <template x-if="drawerOpen">
           <div
             class="av-drawer-overlay"
@@ -288,10 +299,11 @@ const mediaUploadUrl = "/api/media/upload.json";
             x-cloak
           >
             <AvDrawer title="Edit section" description="Update section content and save.">
-              <div class="av-auth-stack-md">
+              <div class="av-auth-stack-md av-portfolio-drawer-body">
                 <div class="av-auth-stack-xs">
                   <p class="av-kicker" x-text="getSectionLabel(activeSectionKey)"></p>
-                  <p class="av-text-soft">Save to refresh the preview.</p>
+                  <h2 class="av-card-heading" x-text="`Edit ${getSectionLabel(activeSectionKey)}`"></h2>
+                  <p class="av-text-soft" x-text="editingItemId ? 'Update and save changes.' : 'Save to refresh the preview.'"></p>
                 </div>
 
                 <template x-if="activeSectionKey === 'profile'">
@@ -643,13 +655,13 @@ const mediaUploadUrl = "/api/media/upload.json";
                   </div>
                 </template>
 
-                <template x-if="error">
+                <template x-if="error && !settingsDrawerOpen">
                   <div class="av-alert av-alert-danger" role="status" x-text="error"></div>
                 </template>
-                <template x-if="warning">
+                <template x-if="warning && !settingsDrawerOpen">
                   <div class="av-alert av-alert-warning" role="status" x-text="warning"></div>
                 </template>
-                <template x-if="success">
+                <template x-if="success && !settingsDrawerOpen">
                   <div class="av-alert av-alert-success" role="status" x-text="success"></div>
                 </template>
 
@@ -658,6 +670,11 @@ const mediaUploadUrl = "/api/media/upload.json";
                     <div class="av-portfolio-drawer-footer__action" x-show="!['featuredProjects', 'experience', 'education', 'certifications', 'achievements'].includes(activeSectionKey)">
                       <AvButton type="button" @click.prevent="saveActiveSection()" :disabled="loading">
                         <span x-text="`Save ${getSectionLabel(activeSectionKey).toLowerCase()}`"></span>
+                      </AvButton>
+                    </div>
+                    <div class="av-portfolio-drawer-footer__action">
+                      <AvButton type="button" variant="ghost" @click.prevent="saveAndNextSection()" :disabled="loading" title="Save current section and continue to the next">
+                        <span x-text="activeSectionKey === 'contact' ? 'Save' : 'Save & Next'"></span>
                       </AvButton>
                     </div>
                     <div class="av-portfolio-drawer-footer__action">
