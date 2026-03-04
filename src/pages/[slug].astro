@@ -1,5 +1,6 @@
 ---
 import "@ansiversa/components/styles/global.css";
+import "../styles/global.css";
 import { resolvePortfolioPublicTemplate } from "@ansiversa/components";
 import { PortfolioItem, PortfolioProject, PortfolioSection, asc, db, eq, inArray } from "astro:db";
 import { normalizePortfolioItem, normalizePortfolioSection, normalizePortfolioProject } from "../modules/portfolio-creator/helpers";
@@ -58,7 +59,7 @@ const isUnlisted = project.visibility === "unlisted";
     <title>{pageTitle}</title>
     {isUnlisted ? <meta name="robots" content="noindex, nofollow" /> : null}
   </head>
-  <body>
+  <body class="av-portfolio-public-view">
     <Template data={portfolioData} />
   </body>
 </html>

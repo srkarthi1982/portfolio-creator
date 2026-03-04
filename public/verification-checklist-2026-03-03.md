@@ -57,7 +57,7 @@ Legend:
 19. ✅/⬜ Save & Next behavior:
    - ✅ Valid save advances to next section (code path exists)
    - ✅ Error case does not advance (guard exists)
-   - ⬜ Last section Save & Next disabled/hidden (manual UI confirm)
+   - ✅ Last section Save & Next disabled/hidden (manual UI confirm)
 
 ## G) Drawer UX Hardening (Mobile + Scroll)
 20. ⬜ Mobile-width drawer scroll/layout behavior.

@@ -33,7 +33,14 @@ let isPaywall = false;
 
 try {
   const result = await Astro.callAction(actions.portfolioCreator.getProject, { projectId });
-  const data = (result as any)?.data ?? (result as any) ?? null;
+  const actionError = (result as any)?.error;
+  if (actionError) {
+    throw new Error(actionError.message || "Unable to load portfolio.");
+  }
+  const data = (result as any)?.data ?? null;
+  if (!data?.project) {
+    throw new Error("Unable to load portfolio.");
+  }
   projectData = data as PortfolioProjectDetail;
 } catch (err) {
   loadError = (err as Error)?.message ?? "Unable to load portfolio.";

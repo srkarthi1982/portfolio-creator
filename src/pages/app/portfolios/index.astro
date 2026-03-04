@@ -54,12 +54,10 @@ const initialState = {
       >
         <AvCard className="av-auth-card">
           <div class="av-auth-stack-md">
-            <div class="av-row-between av-row-wrap">
-              <div class="av-auth-stack-xs">
-                <p class="av-kicker">Portfolio Creator</p>
-                <h1 class="av-section-title">Your portfolios</h1>
-                <p class="av-text-soft">Create a new portfolio or continue editing an existing one.</p>
-              </div>
+            <div class="av-auth-stack-xs">
+              <p class="av-kicker">Portfolio Creator</p>
+              <h1 class="av-section-title">Your portfolios</h1>
+              <p class="av-text-soft">Create a new portfolio or continue editing an existing one.</p>
               <AvButton type="button" @click.prevent="openCreateDrawer()">Create</AvButton>
             </div>
 
@@ -83,32 +81,21 @@ const initialState = {
           </template>
 
           <template x-if="projects.length > 0">
-            <div class="av-grid-auto av-grid-auto--260">
+            <div class="av-portfolio-list-grid">
               <template x-for="project in projects" :key="project.id">
                 <AvCard variant="soft" className="av-card--fullheight">
                   <div class="av-auth-stack-sm">
                     <div class="av-auth-stack-xxs">
-                      <div class="av-row-between">
-                        <h3 class="av-card-heading" x-text="project.title"></h3>
-                        <div class="av-row-wrap">
-                          <template x-if="project.isPublished">
-                            <span class="av-badge av-badge-soft">Published</span>
-                          </template>
-                          <AvBookmarkButton
-                            active={false}
-                            activeExpr="isBookmarked(project.id)"
-                            title="Save bookmark"
-                            activeTitle="Remove bookmark"
-                            onClick="toggleBookmark(project.id, project.title)"
-                            size="sm"
-                          />
-                        </div>
-                      </div>
+                      <h3 class="av-card-heading" x-text="project.title"></h3>
                       <div class="av-portfolio-meta">
-                        <span x-text="`/${project.slug}`"></span>
+                        <span
+                          class="av-badge av-badge-soft av-portfolio-status-pill"
+                          x-text="project.isPublished ? 'Published' : 'Draft'"
+                        ></span>
                         <span x-text="`Visibility: ${project.visibility}`"></span>
-                        <span x-text="`Status: ${project.isPublished ? 'Published' : 'Draft'}`"></span>
-                        <span x-text="project.updatedAt ? `Updated: ${new Date(project.updatedAt).toLocaleDateString()}` : ''"></span>
+                        <template x-if="project.updatedAt">
+                          <span x-text="`Updated: ${new Date(project.updatedAt).toLocaleDateString()}`"></span>
+                        </template>
                       </div>
                     </div>
 
@@ -134,6 +121,14 @@ const initialState = {
                       >
                         <AvIcon name="eye" size="sm" />
                       </AvButton>
+                      <AvBookmarkButton
+                        active={false}
+                        activeExpr="isBookmarked(project.id)"
+                        title="Save bookmark"
+                        activeTitle="Remove bookmark"
+                        onClick="toggleBookmark(project.id, project.title)"
+                        size="sm"
+                      />
                       <AvButton
                         variant="ghost"
                         size="sm"

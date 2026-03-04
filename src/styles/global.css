@@ -4,6 +4,24 @@
   gap: 1rem;
 }
 
+.av-portfolio-list-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 700px) {
+  .av-portfolio-list-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1180px) {
+  .av-portfolio-list-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .av-portfolio-card__head {
   display: flex;
   align-items: center;
@@ -12,11 +30,14 @@
 }
 
 .av-portfolio-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  display: grid;
+  gap: 0.35rem;
   color: var(--av-text-soft);
   font-size: 0.9rem;
+}
+
+.av-portfolio-status-pill {
+  justify-self: start;
 }
 
 .av-portfolio-editor {
@@ -323,4 +344,75 @@
   position: static;
   border-top: 0;
   padding-top: 0;
+}
+
+.av-portfolio-public-view img[alt$="profile photo"] {
+  width: 100%;
+  max-width: 240px;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  border-radius: 12px;
+  object-fit: cover;
+  object-position: center 18%;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.av-portfolio-public-view [id$="contact"] + div,
+.av-portfolio-public-view [id$="contact"] ~ div {
+  color: #111827;
+}
+
+.av-portfolio-public-view [id$="contact"] ~ div a,
+.av-portfolio-public-view [id$="contact"] + div a {
+  color: #111827;
+  text-decoration-color: currentColor;
+}
+
+.av-portfolio-public-view main > header[class~="mb-8"][class~="rounded-2xl"][class~="bg-slate-50"] img[alt$="profile photo"] {
+  float: left;
+  width: 220px;
+  max-width: 45%;
+  margin: 0.75rem 1rem 0.75rem 0;
+}
+
+.av-portfolio-public-view main > header[class~="mb-8"][class~="rounded-2xl"][class~="bg-slate-50"]::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+@media (min-width: 640px) {
+  .av-portfolio-public-view main > header[class~="mb-8"][class~="rounded-2xl"][class~="bg-slate-50"] {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    column-gap: 1.25rem;
+    row-gap: 0.45rem;
+    align-items: start;
+  }
+
+  .av-portfolio-public-view main > header[class~="mb-8"][class~="rounded-2xl"][class~="bg-slate-50"]::after {
+    content: none;
+  }
+
+  .av-portfolio-public-view main > header[class~="mb-8"][class~="rounded-2xl"][class~="bg-slate-50"] > p:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .av-portfolio-public-view main > header[class~="mb-8"][class~="rounded-2xl"][class~="bg-slate-50"] img[alt$="profile photo"] {
+    float: none;
+    width: 220px;
+    max-width: 100%;
+    margin: 0;
+    grid-column: 1;
+    grid-row: 2 / span 4;
+  }
+
+  .av-portfolio-public-view main > header[class~="mb-8"][class~="rounded-2xl"][class~="bg-slate-50"] > h1,
+  .av-portfolio-public-view main > header[class~="mb-8"][class~="rounded-2xl"][class~="bg-slate-50"] > p {
+    grid-column: 2;
+  }
+
+  .av-portfolio-public-view main > header[class~="mb-8"][class~="rounded-2xl"][class~="bg-slate-50"] > p.max-w-3xl {
+    max-width: none;
+  }
 }
