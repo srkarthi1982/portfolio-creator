@@ -47,7 +47,7 @@ Legend:
 15. ✅ Drawer-scoped validation behavior implemented (code check):
    - Invalid values return errors in drawer footer notice
    - Page-level alerts are suppressed while settings drawer is open
-16. ⬜ Full success case manual check:
+16. ✅ Full success case manual check:
    - Valid edit → Save → drawer closes
    - Refresh page → change persists
 
@@ -60,11 +60,11 @@ Legend:
    - ✅ Last section Save & Next disabled/hidden (manual UI confirm)
 
 ## G) Drawer UX Hardening (Mobile + Scroll)
-20. ⬜ Mobile-width drawer scroll/layout behavior.
-21. ⬜ No stuck drawer content; full top-to-bottom scroll.
+20. ✅ Mobile-width drawer scroll/layout behavior.
+21. ✅ No stuck drawer content; full top-to-bottom scroll.
 
 ## H) Regression Quick Sweep
-22. ⬜ Logout/login (or hard refresh) and re-check:
+22. ✅ Logout/login (or hard refresh) and re-check:
    - list page loads
    - editor loads
    - create still works
