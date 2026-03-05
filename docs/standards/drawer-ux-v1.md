@@ -16,6 +16,21 @@
 - Section Edit Drawer (editor page)
   - Use for section/item content editing within editor workflows.
 
+## Drawer Layout Contract
+- All drawers must follow a consistent three-part structure.
+- Header
+  - Contains drawer title.
+  - May include an optional short description.
+  - Must not render an empty header strip if description is absent.
+- Body
+  - Primary content container for forms or editor controls.
+  - Must be scrollable when content exceeds viewport height.
+  - Must use flex scroll hardening (`min-height: 0`) when inside flex layouts.
+- Footer
+  - Contains action buttons and drawer notice area.
+  - Action buttons must follow the footer contract defined in Required Behaviors.
+  - Drawer-scoped validation/errors must render in the notice area above footer actions.
+
 ## Required Behaviors
 - Open/close rules
   - Drawer opens from explicit user action only.
