@@ -114,10 +114,11 @@ const initialState = {
                         variant="ghost"
                         size="sm"
                         href="#"
-                        x-bind:href="`/${project.slug}`"
-                        target="_blank"
-                        aria-label="Open public portfolio"
-                        title="Open public portfolio"
+                        x-bind:href="project.visibility === 'private' || !project.isPublished ? `/app/portfolios/${project.id}/preview` : (project.slug ? `/${project.slug}` : '#')"
+                        x-bind:target="project.visibility === 'private' || !project.isPublished ? '_self' : '_blank'"
+                        aria-label="Open portfolio"
+                        x-bind:title="project.visibility === 'private' || !project.isPublished ? 'Open preview' : (project.slug ? 'Open public portfolio' : 'Set a slug to open public portfolio')"
+                        :disabled="project.visibility !== 'private' && project.isPublished && !project.slug"
                       >
                         <AvIcon name="eye" size="sm" />
                       </AvButton>
