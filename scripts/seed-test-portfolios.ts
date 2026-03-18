@@ -45,7 +45,8 @@ const run = async () => {
 
   const client = createClient({ url, authToken });
   const seedKey = userId.slice(0, 8).toLowerCase();
-  const nowIso = new Date().toISOString();
+const nowIso = new Date().toISOString();
+type SeedUuid = ReturnType<typeof randomUUID>;
 
   const seeds: PortfolioSeed[] = [
     {
@@ -583,7 +584,7 @@ const run = async () => {
   const results: Array<{ id: string; slug: string; themeKey: string; action: "created" | "updated" }> = [];
 
   for (const portfolio of seeds) {
-    let projectId = randomUUID();
+    let projectId: SeedUuid = randomUUID();
     let slug = portfolio.slug;
     let action: "created" | "updated" = "created";
 
@@ -594,7 +595,7 @@ const run = async () => {
     const existingRow = existing.rows[0] as { id?: string; userId?: string } | undefined;
 
     if (existingRow?.id && existingRow?.userId === userId) {
-      projectId = String(existingRow.id);
+      projectId = String(existingRow.id) as SeedUuid;
       action = "updated";
       await client.execute({
         sql: 'DELETE FROM "PortfolioItem" WHERE "sectionId" IN (SELECT "id" FROM "PortfolioSection" WHERE "projectId" = ?)',
