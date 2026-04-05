@@ -94,6 +94,7 @@ This file records what was built/changed so far for the portfolio-creator repo. 
 - 2026-01-29 Smoke test: not run (manual create/publish portfolio).
 
 ## Task Log (Recent)
+- 2026-04-05 Populated `docs/app-spec.md` with implementation-aligned V1 documentation for remaining release-app coverage.
 - 2026-03-18 Components lock sync: upgraded `@ansiversa/components` to `^0.0.169` and refreshed the lockfile for the pre-launch ecosystem lock. Verification: `npm run typecheck` ✅, `npm run build` ✅.
 - 2026-03-18 Typecheck stability blocker fix: resolved pre-launch diagnostics by (1) tightening `scripts/seed-test-portfolios.ts` UUID typing for `projectId` (preserving runtime behavior) and (2) removing unused generic noise in `src/actions/baseRepository.ts` by simplifying `WhereClause`/query option aliases. Verification: `npm run typecheck` ✅ (0 errors, 0 warnings, 0 hints), `npm run build` ✅.
 - 2026-03-18 Pre-launch verification sweep (low-risk stabilization): completed full route/flow audit for public/user/admin surfaces, confirmed no `/dev/*` routes are mounted, and fixed portfolio list “view” action in `src/pages/app/portfolios/index.astro` to avoid dead public links for private/unpublished projects by routing to preview when appropriate (public routes still open in new tab when publishable). Verification: `npm run typecheck` ✅, `npm run build` ✅.
